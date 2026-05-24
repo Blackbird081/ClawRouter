@@ -4,6 +4,13 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.196 — May 24, 2026
+
+- **Updater recovers from OpenClaw size-drop rejection.** OpenClaw v2026.4.5+ refuses to write a config that would shrink the file by a large amount (data-loss guard). Users on a pre-v0.12.175 install carry ~175 entries in `models.providers.blockrun.models`; upgrading to a current ClawRouter legitimately trims that to ~38 (≈90 KB → 25 KB), tripping OpenClaw's guard. The updater previously surfaced this as a hard failure and rolled back, stranding users on the old version. Fix in `scripts/update.sh`: pipe the install output to a captured log, detect the `Config write rejected: …size-drop:` signature, validate the rejected payload against a conservative checklist (top-level keys unchanged, required sections present, model count actually shrank, curated count in [20, 100], non-model sections drift ≤ 2 KB, residual models section ≤ 4 KB, ≥ 65% of the drop comes from the model list), apply just the scoped model-list trim atomically (`tmp.PID` → rename), then fall through to a direct `npm pack` install of the latest version. The EXIT/INT/TERM rollback trap stays active across the fallback path so Ctrl+C still restores the previous install. Tested on a real VPS reproducing the 90728 → 25514 rejection.
+- **Contributor credit.** PR [#170](https://github.com/BlockRunAI/ClawRouter/pull/170) by [@0xCheetah1](https://github.com/0xCheetah1).
+
+---
+
 ## v0.12.195 — May 23, 2026
 
 - **Seedance 720p + audio defaults aligned with blockrun re-enable.** Blockrun took the three Seedance entries offline on 2026-05-21 (`available:false`, returning `400 "not currently available"` on POST) after user reports of (1) 480p output without audio, visibly worse than JiMeng on the same prompt, and (2) the missing real-person enrollment flow. On 2026-05-22 (commit `e6dc1f1`) they re-enabled all three with `resolution=720p` + `generate_audio=true(t2v) / false(i2v)` defaults in the videos route, doubling the per-second token count from `10128` → `20256`. ClawRouter's `VIDEO_PRICING` table was sized for the 480p baseline, so the local `estimateVideoCost` was under-reporting wallet `logUsage` by ~2× for the past day (payment is fully server-dictated, so no overcharge — telemetry only, per `feedback_telemetry_vs_payment`). Updated `src/proxy.ts`:
