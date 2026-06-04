@@ -240,7 +240,7 @@ When new models launch, OpenRouter's catalog lags. Users configure a model that 
 
 ### How ClawRouter Solves This
 
-ClawRouter maintains a curated catalog of 55+ models across 9 providers (including 11 free models), updated with each release. Delisted models have automatic redirect aliases:
+ClawRouter maintains a curated catalog of 55+ models across 9 providers (including 9 free models), updated with each release. Delisted models have automatic redirect aliases:
 
 ```typescript
 // Delisted models redirect automatically

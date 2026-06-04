@@ -138,5 +138,5 @@ An autonomous agent is only as good as its worst provider-minute and its largest
 - [Why Your OpenClaw Bill Spiked 10x](./clawrouter-cuts-llm-api-costs-500x.md) — the token-compression teardown
 - [We Read 100 OpenClaw Issues About OpenRouter](./clawrouter-vs-openrouter-llm-routing-comparison.md) — the structural case for local routing
 - [Routing Profiles](./routing-profiles.md) — `auto` / `eco` / `premium` / `free`
-- [11 Free AI Models, Zero Cost](./11-free-ai-models-zero-cost-blockrun.md) — what the free tier covers
+- [9 Free AI Models, Zero Cost](./9-free-ai-models-zero-cost-blockrun.md) — what the free tier covers
 - [Using Subscriptions with ClawRouter Failover](./subscription-failover.md) — keep your subscription primary, ClawRouter as failover
