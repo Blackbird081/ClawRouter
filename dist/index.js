@@ -58360,6 +58360,7 @@ var top_models_default = [
   "openai/gpt-5.4-nano",
   "google/gemini-3.1-pro",
   "google/gemini-3.1-flash-lite",
+  "google/gemini-3.5-flash",
   "google/gemini-3-pro-preview",
   "google/gemini-3-flash-preview",
   "deepseek/deepseek-v4-pro",
@@ -58467,6 +58468,7 @@ var MODEL_ALIASES = {
   flash: "google/gemini-2.5-flash",
   "gemini-3.1-pro-preview": "google/gemini-3.1-pro",
   "google/gemini-3.1-pro-preview": "google/gemini-3.1-pro",
+  "gemini-3.5-flash": "google/gemini-3.5-flash",
   "gemini-3.1-flash-lite": "google/gemini-3.1-flash-lite",
   "gemini-2.5-flash-lite": "google/gemini-2.5-flash-lite",
   // xAI — grok-4.3 is the public flagship since 2026-06-04 (grok-3 and the
@@ -58996,6 +58998,20 @@ var BLOCKRUN_MODELS = [
     inputPrice: 2,
     outputPrice: 12,
     contextWindow: 105e4,
+    maxOutput: 65536,
+    reasoning: true,
+    vision: true,
+    toolCalling: true
+  },
+  {
+    // Latest-generation Flash with built-in thinking mode (backend
+    // 2026-05-19) — frontier-class quality at Flash pricing.
+    id: "google/gemini-3.5-flash",
+    name: "Gemini 3.5 Flash",
+    version: "3.5",
+    inputPrice: 0.5,
+    outputPrice: 3,
+    contextWindow: 1048576,
     maxOutput: 65536,
     reasoning: true,
     vision: true,

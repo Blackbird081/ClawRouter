@@ -88,6 +88,7 @@ export const MODEL_ALIASES: Record<string, string> = {
   flash: "google/gemini-2.5-flash",
   "gemini-3.1-pro-preview": "google/gemini-3.1-pro",
   "google/gemini-3.1-pro-preview": "google/gemini-3.1-pro",
+  "gemini-3.5-flash": "google/gemini-3.5-flash",
   "gemini-3.1-flash-lite": "google/gemini-3.1-flash-lite",
   "gemini-2.5-flash-lite": "google/gemini-2.5-flash-lite",
 
@@ -689,6 +690,20 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     inputPrice: 2.0,
     outputPrice: 12.0,
     contextWindow: 1050000,
+    maxOutput: 65536,
+    reasoning: true,
+    vision: true,
+    toolCalling: true,
+  },
+  {
+    // Latest-generation Flash with built-in thinking mode (backend
+    // 2026-05-19) — frontier-class quality at Flash pricing.
+    id: "google/gemini-3.5-flash",
+    name: "Gemini 3.5 Flash",
+    version: "3.5",
+    inputPrice: 0.5,
+    outputPrice: 3.0,
+    contextWindow: 1048576,
     maxOutput: 65536,
     reasoning: true,
     vision: true,

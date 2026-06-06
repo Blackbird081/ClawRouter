@@ -420,6 +420,7 @@ No Surf account, no API key — settles directly to Surf's Base treasury in USDC
 | minimax/minimax-m2.5                          |     $0.30 |      $1.20 |    $0.0008 | 205K    | reasoning, agentic, tools                    |
 | google/gemini-2.5-flash                       |     $0.30 |      $2.50 |    $0.0014 | 1M      | vision, tools                                |
 | openai/gpt-4.1-mini                           |     $0.40 |      $1.60 |    $0.0010 | 128K    | tools                                        |
+| google/gemini-3.5-flash                       |     $0.50 |      $3.00 |    $0.0018 | 1M      | reasoning, vision, tools (thinking built-in) |
 | google/gemini-3-flash-preview                 |     $0.50 |      $3.00 |    $0.0018 | 1M      | vision                                       |
 | moonshot/kimi-k2.5                            |     $0.60 |      $3.00 |    $0.0018 | 262K    | reasoning, vision, agentic, tools            |
 | moonshot/kimi-k2.6                            |     $0.95 |      $4.00 |    $0.0025 | 262K    | reasoning, vision, agentic, tools            |
