@@ -557,9 +557,17 @@ console.log(decision);
 # Router tests (no wallet needed)
 npx tsx test/e2e.ts
 
+# Proxy end-to-end smoke (mock upstream, no wallet needed)
+npm run test:e2e
+
 # Proxy reuse tests
 npx tsx test/proxy-reuse.ts
 
-# Full e2e with payments (requires funded wallet)
-BLOCKRUN_WALLET_KEY=0x... npx tsx test/e2e.ts
+# Live e2e with payments (requires funded wallet)
+BLOCKRUN_WALLET_KEY=0x... npm run test:e2e
+
+# Optional slower/costlier live coverage
+CLAWROUTER_E2E_FULL=1 BLOCKRUN_WALLET_KEY=0x... npm run test:e2e
+RUN_IMAGE_TEST=1 BLOCKRUN_WALLET_KEY=0x... npm run test:e2e
+RUN_MUSIC_TEST=1 BLOCKRUN_WALLET_KEY=0x... npm run test:e2e
 ```

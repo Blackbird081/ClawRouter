@@ -145,11 +145,22 @@ export const MODEL_ALIASES: Record<string, string> = {
   "free/deepseek-v4-pro": "free/deepseek-v4-flash", // V4 Pro delisted — redirect pinned callers
   "nvidia/deepseek-v4-flash": "free/deepseek-v4-flash",
   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
+  // qwen3-coder-480b retired (NVIDIA EOL 2026-06-14) → redirects to seed-oss-36b
+  // server-side; keep the explicit id mappings for pinned callers (BlockRun still
+  // resolves them), but point the generic coding shorthands at the live successor.
   "nvidia/qwen3-coder-480b": "free/qwen3-coder-480b",
   "qwen/qwen3-coder-480b-a35b-instruct": "free/qwen3-coder-480b",
-  "nvidia/glm-4.7": "free/qwen3-coder-480b",
+  "nvidia/glm-4.7": "free/seed-oss-36b",
   "nvidia/llama-4-maverick": "free/llama-4-maverick",
-  "nvidia/qwen3-next-80b-a3b-thinking": "free/llama-4-maverick",
+  // qwen3-next thinking variant retired; live sibling is the instruct model
+  "nvidia/qwen3-next-80b-a3b-thinking": "free/qwen3-next-80b-a3b-instruct",
+  // New live free models from the 2026-06-14 BlockRun free-tier refresh
+  "nvidia/qwen3-next-80b-a3b-instruct": "free/qwen3-next-80b-a3b-instruct",
+  "nvidia/seed-oss-36b": "free/seed-oss-36b",
+  "nvidia/mistral-nemotron": "free/mistral-nemotron",
+  "nvidia/step-3.7-flash": "free/step-3.7-flash",
+  "nvidia/nemotron-nano-9b-v2": "free/nemotron-nano-9b-v2",
+  "nvidia/nemotron-nano-12b-v2-vl": "free/nemotron-nano-12b-v2-vl",
   "nvidia/mistral-small-4-119b": "free/llama-4-maverick", // NVIDIA upstream timing out — hidden + redirected server-side 2026-06-08
   // Retired free IDs → successors (mirror server-side redirects)
   "nvidia/nemotron-ultra-253b": "free/llama-4-maverick",
@@ -159,11 +170,11 @@ export const MODEL_ALIASES: Record<string, string> = {
   // NVIDIA upstream recovered) so it's a real free catalog entry again.
   "nvidia/mistral-large-3-675b": "free/mistral-large-3-675b",
   "nvidia/qwen3.5-122b-a10b": "free/qwen3.5-122b-a10b",
-  "nvidia/devstral-2-123b": "free/qwen3-coder-480b",
+  "nvidia/devstral-2-123b": "free/seed-oss-36b",
   "free/nemotron-ultra-253b": "free/llama-4-maverick",
   "free/nemotron-3-super-120b": "free/llama-4-maverick",
   "free/nemotron-super-49b": "free/llama-4-maverick",
-  "free/devstral-2-123b": "free/qwen3-coder-480b",
+  "free/devstral-2-123b": "free/seed-oss-36b",
   // New blockrun-featured free models (2026-06-14 catalog sweep)
   "mistral-large": "free/mistral-large-3-675b",
   "mistral-large-3-675b": "free/mistral-large-3-675b",
@@ -176,14 +187,26 @@ export const MODEL_ALIASES: Record<string, string> = {
   "v4-pro": "free/deepseek-v4-flash", // V4 Pro NVIDIA hung → flash
   "v4-flash": "free/deepseek-v4-flash",
   "mistral-free": "free/llama-4-maverick",
-  "glm-free": "free/qwen3-coder-480b",
+  "glm-free": "free/seed-oss-36b", // qwen3-coder retired → live coder successor
   "llama-free": "free/llama-4-maverick",
-  "qwen-coder": "free/qwen3-coder-480b",
-  "qwen-coder-free": "free/qwen3-coder-480b",
-  "qwen-thinking": "free/llama-4-maverick",
-  "qwen3-next": "free/llama-4-maverick",
+  "qwen-coder": "free/seed-oss-36b", // qwen3-coder-480b retired → seed-oss-36b
+  "qwen-coder-free": "free/seed-oss-36b",
+  "qwen-thinking": "free/qwen3-next-80b-a3b-instruct",
+  "qwen3-next": "free/qwen3-next-80b-a3b-instruct", // now a live model (instruct)
+  "qwen3-next-80b": "free/qwen3-next-80b-a3b-instruct",
   "mistral-small": "free/llama-4-maverick",
-  // Vision-capable free model — BlockRun's first
+  // New live free models (2026-06-14 BlockRun free-tier refresh)
+  "seed-oss": "free/seed-oss-36b",
+  "seed-oss-36b": "free/seed-oss-36b",
+  "coder-free": "free/seed-oss-36b",
+  "mistral-nemotron": "free/mistral-nemotron",
+  "step-flash": "free/step-3.7-flash",
+  "step-3.7-flash": "free/step-3.7-flash",
+  "nemotron-nano-9b": "free/nemotron-nano-9b-v2",
+  "nemotron-nano": "free/nemotron-nano-9b-v2",
+  "nemotron-nano-vl": "free/nemotron-nano-12b-v2-vl",
+  "nano-vl": "free/nemotron-nano-12b-v2-vl",
+  // Vision-capable free models
   "nemotron-omni": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
   "nano-omni": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
   "vision-free": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
@@ -194,8 +217,8 @@ export const MODEL_ALIASES: Record<string, string> = {
   "nemotron-super": "free/llama-4-maverick",
   "nemotron-49b": "free/llama-4-maverick",
   "nemotron-120b": "free/llama-4-maverick",
-  devstral: "free/qwen3-coder-480b",
-  "devstral-2": "free/qwen3-coder-480b",
+  devstral: "free/seed-oss-36b",
+  "devstral-2": "free/seed-oss-36b",
   maverick: "free/llama-4-maverick",
   free: "free/gpt-oss-120b",
 
@@ -1220,6 +1243,74 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     contextWindow: 131072,
     maxOutput: 16384,
     reasoning: true,
+  },
+  // 2026-06-16: BlockRun's 2026-06-14 free-tier refresh (self-healing health gate
+  // + probe-verified lineup, blockrun commit 5817ecd) added these live NVIDIA free
+  // models. qwen3-coder-480b was retired (NVIDIA EOL 2026-06-14) and now redirects
+  // server-side to seed-oss-36b; deepseek-v4-flash/glm-4.7 stay catalog-only.
+  {
+    // Qwen3-Next 80B (A3B active MoE): 262K context, strong reasoning + coding.
+    id: "free/qwen3-next-80b-a3b-instruct",
+    name: "[Free] Qwen3-Next 80B Instruct",
+    version: "next-80b-a3b",
+    inputPrice: 0,
+    outputPrice: 0,
+    contextWindow: 262144,
+    maxOutput: 16384,
+    reasoning: true,
+  },
+  {
+    // ByteDance Seed-OSS 36B: strong open-source coder, 131K context. Successor
+    // to the retired qwen3-coder-480b (BlockRun redirects qwen3-coder → seed-oss).
+    id: "free/seed-oss-36b",
+    name: "[Free] Seed-OSS 36B",
+    version: "oss-36b",
+    inputPrice: 0,
+    outputPrice: 0,
+    contextWindow: 131072,
+    maxOutput: 16384,
+  },
+  {
+    // Mistral × NVIDIA hybrid: strong instruction following, 131K context.
+    id: "free/mistral-nemotron",
+    name: "[Free] Mistral Nemotron",
+    version: "nemotron",
+    inputPrice: 0,
+    outputPrice: 0,
+    contextWindow: 131072,
+    maxOutput: 16384,
+  },
+  {
+    // StepFun Step 3.7 Flash: reasoning-focused, 131K context.
+    id: "free/step-3.7-flash",
+    name: "[Free] StepFun Step 3.7 Flash",
+    version: "3.7-flash",
+    inputPrice: 0,
+    outputPrice: 0,
+    contextWindow: 131072,
+    maxOutput: 16384,
+    reasoning: true,
+  },
+  {
+    // NVIDIA Nemotron Nano 9B v2: fast lightweight generalist, 131K context.
+    id: "free/nemotron-nano-9b-v2",
+    name: "[Free] Nemotron Nano 9B v2",
+    version: "nano-9b-v2",
+    inputPrice: 0,
+    outputPrice: 0,
+    contextWindow: 131072,
+    maxOutput: 16384,
+  },
+  {
+    // NVIDIA Nemotron Nano 12B v2 VL: vision-language (text + image), 131K context.
+    id: "free/nemotron-nano-12b-v2-vl",
+    name: "[Free] Nemotron Nano 12B v2 VL",
+    version: "nano-12b-v2-vl",
+    inputPrice: 0,
+    outputPrice: 0,
+    contextWindow: 131072,
+    maxOutput: 16384,
+    vision: true,
   },
 
   // Z.AI GLM-5 Models

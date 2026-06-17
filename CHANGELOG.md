@@ -4,6 +4,23 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.210 — June 16, 2026
+
+Align the free tier with BlockRun's 2026-06-14 free-tier refresh (`blockrun` commit `5817ecd`: self-healing health gate + probe-verified NVIDIA lineup). BlockRun found only 7 of 17 "available" free models were actually being served and replaced the stale manual redirect list with a per-model circuit breaker.
+
+### Free models realigned with the probe-verified lineup
+
+- **`free/qwen3-coder-480b` retired** — NVIDIA EOL'd it on 2026-06-14; BlockRun now redirects `qwen3-coder` → `seed-oss-36b` server-side. Dropped from the auto-pick cascade (`FREE_MODELS`), the picker (`top-models.json`), and the router COMPLEX backstops. The catalog entry + explicit `nvidia/qwen3-coder-480b` alias stay for pinned callers (BlockRun still resolves them via redirect); the generic coding shorthands (`qwen-coder`, `glm-free`, `devstral`, …) now point at the live successor `free/seed-oss-36b`.
+- **`free/deepseek-v4-flash` removed from the eco SIMPLE fallback** — NVIDIA upstream hung; BlockRun redirects it. Replaced with the live `free/qwen3-next-80b-a3b-instruct`. Catalog entry kept (still direct-callable, redirects server-side).
+- **6 new live free models added** to the catalog + aliases (probe-verified by BlockRun): `free/qwen3-next-80b-a3b-instruct` (262K ctx, reasoning + coding), `free/seed-oss-36b` (coding), `free/mistral-nemotron`, `free/step-3.7-flash` (reasoning), `free/nemotron-nano-9b-v2` (fast lightweight), `free/nemotron-nano-12b-v2-vl` (vision-language).
+- **Auto-pick cascade 7 → 12**, gpt-oss kept at the head (heavy-user default — never retired). Picker free set 7 → 8 (`qwen3-coder-480b` → `qwen3-next-80b-a3b-instruct` + `seed-oss-36b`). README/SKILL free-count synced 7 → 8; install-script `/model` help echoes refreshed to live models.
+
+### Updater: clean stale OpenClaw install metadata ([#186](https://github.com/BlockRunAI/ClawRouter/pull/186), thanks [@0xCheetah1](https://github.com/0xCheetah1))
+
+- **`scripts/update.sh` now removes ClawRouter's stale record from `~/.openclaw/plugins/installs.json` after a verified update.** OpenClaw 2026.6 migrates its plugin install index toward shared SQLite; a leftover ClawRouter `installRecords` entry that no longer matches the installed version/path made `openclaw doctor` warn about conflicting install metadata on every run. The updater now compares the legacy record against the current package across the `extensions/`, project-scoped, and global npm layouts, and removes **only** ClawRouter's record (other plugins untouched) when it is stale — guarded by a full try/catch and an atomic write.
+
+---
+
 ## v0.12.209 — June 14, 2026
 
 Registry realignment with the 2026-06-13 → 06-14 BlockRun catalog sweep: Fable 5 delisting reverted, Kimi K2.7 promoted, free tier strengthened. 619 tests passing.

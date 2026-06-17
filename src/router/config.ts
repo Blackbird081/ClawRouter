@@ -1101,7 +1101,7 @@ export const DEFAULT_ROUTING_CONFIG: RoutingConfig = {
         "free/gpt-oss-20b", // FREE — smaller, faster
         "free/mistral-large-3-675b", // FREE — 675B general flagship (re-featured 2026-06-14)
         "free/qwen3.5-122b-a10b", // FREE — newest-gen Qwen, strong general
-        "free/deepseek-v4-flash", // FREE — 1M context, ~5x faster than v4-pro
+        "free/qwen3-next-80b-a3b-instruct", // FREE — 262K ctx, strong general (deepseek-v4-flash retired)
         "google/gemini-3.1-flash-lite", // $0.25/$1.50 — newest flash-lite
         "openai/gpt-5.4-nano", // $0.20/$1.25 — fast nano
         "google/gemini-2.5-flash-lite", // $0.10/$0.40
@@ -1182,7 +1182,7 @@ export const DEFAULT_ROUTING_CONFIG: RoutingConfig = {
         "openai/gpt-5.4", // Previous flagship (slow but stable, benchmarked at 6,213ms)
         "openai/gpt-5.3-codex",
         "deepseek/deepseek-chat", // Cheap, reliable
-        "free/qwen3-coder-480b", // NVIDIA free ultimate backstop
+        "free/seed-oss-36b", // NVIDIA free ultimate backstop (qwen3-coder-480b retired)
       ],
     },
     REASONING: {
@@ -1234,7 +1234,7 @@ export const DEFAULT_ROUTING_CONFIG: RoutingConfig = {
         "openai/gpt-5.5", // Newest flagship — native agent + computer use (exactly the agentic-tier use case)
         "openai/gpt-5.4", // Previous flagship — 6,213ms, reliable
         "deepseek/deepseek-chat", // 1,431ms — cheap, reliable
-        "free/qwen3-coder-480b", // NVIDIA free ultimate backstop
+        "free/seed-oss-36b", // NVIDIA free ultimate backstop (qwen3-coder-480b retired)
       ],
     },
     REASONING: {

@@ -29,6 +29,12 @@ const MODEL_PRICING = new Map<string, ModelPricing>([
   ["nvidia/qwen3-next-80b-a3b-thinking", { inputPrice: 0, outputPrice: 0 }],
   ["nvidia/mistral-small-4-119b", { inputPrice: 0, outputPrice: 0 }],
   ["nvidia/nemotron-3-nano-omni-30b-a3b-reasoning", { inputPrice: 0, outputPrice: 0 }],
+  ["nvidia/qwen3-next-80b-a3b-instruct", { inputPrice: 0, outputPrice: 0 }],
+  ["nvidia/seed-oss-36b", { inputPrice: 0, outputPrice: 0 }],
+  ["nvidia/mistral-nemotron", { inputPrice: 0, outputPrice: 0 }],
+  ["nvidia/step-3.7-flash", { inputPrice: 0, outputPrice: 0 }],
+  ["nvidia/nemotron-nano-9b-v2", { inputPrice: 0, outputPrice: 0 }],
+  ["nvidia/nemotron-nano-12b-v2-vl", { inputPrice: 0, outputPrice: 0 }],
 ]);
 
 const baseOptions: RouterOptions = {
