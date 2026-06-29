@@ -4,6 +4,19 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.214 — June 28, 2026
+
+Recover tool calls that Gemini 3.5 Flash emits as plain-text transcripts instead of structured `tool_calls` ([#189](https://github.com/BlockRunAI/ClawRouter/issues/189)).
+
+### Gemini `[Called function "…" with args: {…}]` transcripts now become real tool calls
+
+- **Symptom:** through the OpenAI-compatible path, Gemini 3.5 Flash sometimes narrates a tool call as assistant text — `[Called function "terminal" with args: {"command":"whoami"}]` — instead of returning structured `tool_calls` with `finish_reason: "tool_calls"`. Downstream chat surfaces (seen in Chermes/Telegram) then **displayed the transcript** to the user instead of dispatching the tool, stalling agent loops.
+- **Fix:** added a third recognizer to `src/textual-tool-calls.ts` (which already synthesizes structured tool calls from OpenClaw `<tool_call>` and Anthropic `<function_calls>` text shapes). The new extractor locates `[Called function "NAME" with args: ` and parses the JSON args with a **balanced-brace scan** that honors string literals — so commas, braces, and `]` inside the JSON can't truncate the match. It only fires when the args parse as a JSON object **and** the block is closed by `]`, so prose that merely quotes the format doesn't mis-fire. Both call sites — streaming and non-streaming in `proxy.ts` — share this function, so the recovered call is forwarded as a proper `tool_calls` delta/message with empty content and `finish_reason: "tool_calls"`.
+- **Tests:** 8 new cases in `src/textual-tool-calls.test.ts` (single/multi-arg, empty args, nested JSON with embedded brackets, multiple transcripts with prose stripping, no-mis-fire on missing bracket / non-object args). Full suite **631 passed**, lint + typecheck + build clean.
+- **Out of scope:** the issue's secondary `[Tool "function" returned]: {…}` display line is a downstream chat-surface rendering concern, not a ClawRouter normalization gap — left untouched.
+
+---
+
 ## v0.12.213 — June 26, 2026
 
 Fix an HTTP 500 (`Failed to parse payment requirements`) that broke paid Base-chain calls whenever a small request seeded the pre-auth cache before a larger one ([#188](https://github.com/BlockRunAI/ClawRouter/pull/188), thanks [@KillerQueen-Z](https://github.com/KillerQueen-Z)).

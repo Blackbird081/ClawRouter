@@ -78315,6 +78315,7 @@ var OPENCLAW_ARG_RE = /<arg_key>([\s\S]*?)<\/arg_key>\s*<arg_value>([\s\S]*?)<\/
 var ANTHROPIC_BLOCK_RE = /<function_calls\b[^>]*>([\s\S]*?)<\/function_calls\s*>/g;
 var ANTHROPIC_INVOKE_RE = /<invoke\s+name=["']([^"']+)["'][^>]*>([\s\S]*?)<\/invoke\s*>/g;
 var ANTHROPIC_PARAM_RE = /<parameter\s+name=["']([^"']+)["'][^>]*>([\s\S]*?)<\/parameter\s*>/g;
+var GEMINI_PREFIX_RE = /\[Called function\s+["']([^"']+)["']\s+with args:\s*/g;
 function generateId() {
   return `call_${randomBytes6(12).toString("base64url")}`;
 }
@@ -78392,6 +78393,59 @@ function extractAnthropicCalls(content) {
   }
   return { calls, matches };
 }
+function scanJsonObject(content, start) {
+  if (content[start] !== "{") return -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < content.length; i++) {
+    const ch = content[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) return i + 1;
+    }
+  }
+  return -1;
+}
+function extractGeminiCalls(content) {
+  const calls = [];
+  const matches = [];
+  GEMINI_PREFIX_RE.lastIndex = 0;
+  let match;
+  while ((match = GEMINI_PREFIX_RE.exec(content)) !== null) {
+    const name = match[1]?.trim();
+    const jsonStart = match.index + match[0].length;
+    if (!name || content[jsonStart] !== "{") continue;
+    const jsonEnd = scanJsonObject(content, jsonStart);
+    if (jsonEnd === -1) continue;
+    let parsed;
+    try {
+      parsed = JSON.parse(content.slice(jsonStart, jsonEnd));
+    } catch {
+      continue;
+    }
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+    let close = jsonEnd;
+    while (close < content.length && /\s/.test(content[close])) close++;
+    if (content[close] !== "]") continue;
+    calls.push({
+      id: generateId(),
+      type: "function",
+      function: { name, arguments: JSON.stringify(parsed) }
+    });
+    matches.push({ start: match.index, end: close + 1 });
+    GEMINI_PREFIX_RE.lastIndex = close + 1;
+  }
+  return { calls, matches };
+}
 function stripRanges(content, ranges) {
   if (ranges.length === 0) return content;
   const sorted = [...ranges].sort((a, b) => a.start - b.start);
@@ -78412,11 +78466,16 @@ function extractTextualToolCalls(content) {
   }
   const openClaw = extractOpenClawCalls(content);
   const anthropic = extractAnthropicCalls(content);
-  const toolCalls = [...openClaw.calls, ...anthropic.calls];
+  const gemini = extractGeminiCalls(content);
+  const toolCalls = [...openClaw.calls, ...anthropic.calls, ...gemini.calls];
   if (toolCalls.length === 0) {
     return { toolCalls: [], cleanedContent: content };
   }
-  const cleanedContent = stripRanges(content, [...openClaw.matches, ...anthropic.matches]);
+  const cleanedContent = stripRanges(content, [
+    ...openClaw.matches,
+    ...anthropic.matches,
+    ...gemini.matches
+  ]);
   return { toolCalls, cleanedContent };
 }
 
