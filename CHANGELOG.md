@@ -4,6 +4,38 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.216 — June 30, 2026
+
+Security + dependency hygiene: clear all 22 Dependabot alerts (**`npm audit` → 0 vulnerabilities**) and fix a latent missing-dependency bug in the upstream-proxy feature.
+
+### `undici` is now a declared dependency (fixes the upstream-proxy feature for clean installs)
+
+- **Latent bug:** `src/upstream-proxy.ts` lazy-imports `undici` (`await import("undici")`) to honor `BLOCKRUN_UPSTREAM_PROXY` / `HTTPS_PROXY` / `ALL_PROXY`, but `undici` was **never declared** in `dependencies` — it only resolved because `openclaw` (a dev/peer dependency) hoisted `undici` to the install root. `npm ls undici --omit=dev` confirmed no shipped runtime dep provides it, so a clean `npm install -g @blockrun/clawrouter` could leave the proxy feature unable to load undici (caught + warned, then connecting directly). **Fix:** declare `undici@^8.5.0` (the patched version) as a direct dependency — the proxy feature now works regardless of hoisting, and the undici advisories are resolved at the source.
+
+### Dependency updates
+
+- **openclaw** dev/peer dependency bumped `2026.5.7 → 2026.6.10` (in range), clearing all `openclaw` and transitive `@mariozechner/pi-*`, `markdown-it`, `tar`, `undici` advisories.
+- **esbuild** pinned to `^0.28.1` via `overrides` (joining the existing `basic-ftp` / `ws` / `postcss` pins), clearing GHSA-g7r4-m6w7-qqqr (dev-server arbitrary file read, Windows-only — not reachable here, but pinned for cleanliness).
+- All alerts were dev-time/lockfile-only — the **published runtime footprint had no vulnerable deps**; this commit makes the lockfile and dependency declarations honest.
+
+### Test fix
+
+- `test/integration/security-scanner.test.ts` located openclaw's scanner chunk by the `skill-scanner-*.js` name; openclaw 2026.6.10 renamed it to `scanner-*.js`. Broadened the filter to match both prefixes (the loader already disambiguates by the `scanDirectoryWithSummary` export). Full suite **645 passed**, lint + typecheck + build clean.
+
+---
+
+## v0.12.215 — June 30, 2026
+
+Recover tool calls that GPT 5.4 emits as plain JSON / function-call-looking text instead of structured `tool_calls` ([#193](https://github.com/BlockRunAI/ClawRouter/issues/193), thanks [@0xCheetah1](https://github.com/0xCheetah1)).
+
+### GPT-5.4 plain-text tool calls now become real tool calls
+
+- **Symptom:** through the OpenAI-compatible path, GPT 5.4 sometimes emits a tool call as assistant text instead of structured `tool_calls` — e.g. `{"type":"function","name":"terminal","parameters":{"cmd":"ls -alh /home/Blockrun"}}`, `{"name":"session_search","parameters":{…}}`, `read_file(parameters={"path":"…"})`, or a `terminal\nCOMMAND\n[/terminal]` block. Downstream chat surfaces (seen in Chermes/Telegram) then **displayed the raw text** to the user instead of dispatching the tool — the same class of failure as the Gemini #189/#190 fix, but with GPT-specific shapes.
+- **Fix:** added a fourth recognizer to `src/textual-tool-calls.ts` (which already synthesizes structured calls from OpenClaw `<tool_call>`, Anthropic `<function_calls>`, and Gemini `[Called function …]` text shapes). The GPT extractor recovers: whole-content `{"name":…,"parameters":…}`, whole-content `{"type":"function",…}` (incl. pretty-printed), whole-content `NAME(parameters={…})`, a trailing JSON object after prose **only when `"type":"function"` is explicit**, and the `terminal\n…\n[/terminal]` block. Guardrails: prose JSON examples only fire when the whole content is a call; an incomplete terminal block or a non-`function` `type` (e.g. a JSON schema `"type":"object"`) is rejected; the terminal `cmd` arg is mirrored to `command` (preserving `cmd`) for OpenClaw's terminal tool. It runs only when the tag-based extractors find nothing, so it can't interfere with tagged content. Both call sites — streaming and non-streaming in `proxy.ts` — share this function.
+- **Tests:** 14 new cases in `src/textual-tool-calls.test.ts` (all five shapes plus no-mis-fire on prose examples, missing `parameters`, incomplete terminal block, non-`function` type, and `cmd`→`command` normalization). Full suite **645 passed**, lint + typecheck + prettier + build clean.
+
+---
+
 ## v0.12.214 — June 28, 2026
 
 Recover tool calls that Gemini 3.5 Flash emits as plain-text transcripts instead of structured `tool_calls` ([#189](https://github.com/BlockRunAI/ClawRouter/issues/189)).

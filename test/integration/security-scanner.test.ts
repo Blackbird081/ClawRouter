@@ -70,16 +70,20 @@ describe("OpenClaw security scanner", () => {
   beforeAll(async () => {
     distDir = resolveClawrouterDist();
 
-    // Locate openclaw's skill-scanner chunk in its dist/.
-    // 2026.5.7 ships two skill-scanner-*.js chunks: one minified with mangled exports
-    // and one with proper names. Iterate all and pick the one exporting
-    // scanDirectoryWithSummary; fall back to "first function export" for pre-2026.5.4 builds.
+    // Locate openclaw's scanner chunk in its dist/.
+    // The chunk name has drifted across openclaw releases: 2026.5.x shipped it as
+    // `skill-scanner-*.js`, 2026.6.10 renamed it to `scanner-*.js`. Either way two
+    // chunks ship — one minified with mangled exports and one with proper names —
+    // so match both prefixes, iterate all, and pick the one exporting
+    // scanDirectoryWithSummary; fall back to "first function export" for older builds.
     const openclawDist = resolveOpenclawDist();
     try {
       const files = readdirSync(openclawDist);
-      const scannerFiles = files.filter((f) => f.startsWith("skill-scanner"));
+      const scannerFiles = files.filter(
+        (f) => (f.startsWith("skill-scanner") || f.startsWith("scanner-")) && f.endsWith(".js"),
+      );
       if (scannerFiles.length === 0) {
-        scannerLoadError = `skill-scanner chunk not found in ${openclawDist}`;
+        scannerLoadError = `scanner chunk not found in ${openclawDist}`;
         return;
       }
       for (const scannerFile of scannerFiles) {
