@@ -37,6 +37,7 @@ import { base } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { x402Client } from "@x402/fetch";
 import { createPayFetchWithPreAuth } from "./payment-preauth.js";
+import { withBuilderCodeServiceCode } from "./builder-code.js";
 import { registerExactEvmScheme } from "@x402/evm/exact/client";
 import { toClientEvmSigner } from "@x402/evm";
 import {
@@ -2004,6 +2005,24 @@ export async function startProxy(options: ProxyOptions): Promise<ProxyHandle> {
     registerExactSvmScheme(x402, { signer: solanaSigner });
     console.log(`[ClawRouter] Solana wallet: ${solanaAddress}`);
   }
+
+  // Stamp BlockRun's builder-code service code (`s`) onto every signed EVM
+  // payment for on-chain attribution. Mirrors @x402/extensions'
+  // BuilderCodeClientExtension but fires without the server having to advertise
+  // the extension and needs no @x402 upgrade. The EIP-712 signature covers the
+  // authorization, not the extensions, so stamping post-creation is safe. Any app
+  // code (`a`) the server echoed back is preserved.
+  //
+  // Gated to EVM (`eip155:*`): builder-code / ERC-8021 is Ethereum-only, so
+  // stamping it onto Solana (`solana:*`) payloads would attach a field the SVM
+  // facilitator never expects — a no-op at best, a settlement risk at worst.
+  x402.onAfterPaymentCreation(async (context) => {
+    if (!context.selectedRequirements.network.startsWith("eip155")) return;
+    const payload = context.paymentPayload as {
+      extensions?: Record<string, unknown>;
+    };
+    payload.extensions = withBuilderCodeServiceCode(payload.extensions);
+  });
 
   // Log which chain is used for each payment and capture actual payment amount
   x402.onAfterPaymentCreation(async (context) => {
