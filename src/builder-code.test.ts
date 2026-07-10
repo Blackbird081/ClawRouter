@@ -19,6 +19,41 @@ describe("withBuilderCodeServiceCode", () => {
     expect(info.s).toEqual([BLOCKRUN_SERVICE_CODE]);
   });
 
+  it("appends the BlockRun code after existing service attribution", () => {
+    const serviceCodes = ["bc_existing"];
+    const ext = withBuilderCodeServiceCode({
+      "builder-code": { info: { a: "app", s: serviceCodes } },
+    });
+    const info = (ext["builder-code"] as BuilderCodeExtension).info;
+
+    expect(info.a).toBe("app");
+    expect(info.s).toEqual(["bc_existing", BLOCKRUN_SERVICE_CODE]);
+    expect(info.s).not.toBe(serviceCodes);
+    expect(serviceCodes).toEqual(["bc_existing"]);
+  });
+
+  it("preserves valid service codes from a partially malformed array", () => {
+    const ext = withBuilderCodeServiceCode({
+      "builder-code": { info: { s: ["bc_existing", 42, null] } },
+    });
+
+    expect((ext["builder-code"] as BuilderCodeExtension).info.s).toEqual([
+      "bc_existing",
+      BLOCKRUN_SERVICE_CODE,
+    ]);
+  });
+
+  it("does not duplicate an existing BlockRun service code", () => {
+    const ext = withBuilderCodeServiceCode({
+      "builder-code": { info: { s: ["bc_existing", BLOCKRUN_SERVICE_CODE] } },
+    });
+
+    expect((ext["builder-code"] as BuilderCodeExtension).info.s).toEqual([
+      "bc_existing",
+      BLOCKRUN_SERVICE_CODE,
+    ]);
+  });
+
   it("preserves unrelated extensions", () => {
     const ext = withBuilderCodeServiceCode({ "some-ext": { foo: 1 } });
     expect(ext["some-ext"]).toEqual({ foo: 1 });
