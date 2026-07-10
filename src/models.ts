@@ -72,7 +72,16 @@ export const MODEL_ALIASES: Record<string, string> = {
   // OpenAI
   gpt: "openai/gpt-4o",
   gpt4: "openai/gpt-4o",
-  gpt5: "openai/gpt-5.5",
+  // GPT-5.6 (GA 2026-07-09) is the newest flagship generation. Generic shorthands
+  // resolve to the STABLE Terra tier, not the deepest Sol tier — Sol has shown
+  // upstream server_error/500s after ~250s waits (issue #202). Explicit tier pins
+  // below stay exact so callers who want Sol/Luna can opt in.
+  gpt5: "openai/gpt-5.6-terra",
+  "gpt-5.6": "openai/gpt-5.6-terra",
+  "openai/gpt-5.6": "openai/gpt-5.6-terra",
+  "gpt-5.6-sol": "openai/gpt-5.6-sol",
+  "gpt-5.6-terra": "openai/gpt-5.6-terra",
+  "gpt-5.6-luna": "openai/gpt-5.6-luna",
   "gpt-5.5": "openai/gpt-5.5",
   "gpt-5.4": "openai/gpt-5.4",
   "gpt-5.4-pro": "openai/gpt-5.4-pro",
@@ -446,9 +455,56 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     reasoning: true,
     toolCalling: true,
   },
-  // GPT-5.5 — newest visible flagship in blockrun. First fully retrained base since
-  // GPT-4.5; 1M+ context, native agent + computer use. Costs 2x gpt-5.4 — routing
-  // tiers still default to gpt-5.4 because it's benchmarked; users can pin 5.5.
+  // GPT-5.6 Family — GA 2026-07-09. Three fixed tiers (Sol/Terra/Luna) replace the
+  // single-model-plus-effort-knob line (blockrun source-of-truth models.ts). Sol is
+  // the deepest-reasoning flagship; Terra is the balanced everyday tier; Luna is the
+  // cost-efficient/latency tier. Generic `gpt5`/`gpt-5.6` aliases resolve to Terra,
+  // NOT Sol: Sol's long-horizon reasoning has shown upstream server_error/500s after
+  // very long (~250s) waits on release-window traffic (issue #202), so the stable
+  // Terra tier is the sane default. Sol stays reachable via the explicit
+  // `gpt-5.6-sol` pin for callers who want the deepest tier and accept the risk.
+  {
+    id: "openai/gpt-5.6-sol",
+    name: "GPT-5.6 Sol",
+    version: "5.6",
+    inputPrice: 5.0,
+    outputPrice: 30.0,
+    contextWindow: 1050000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "openai/gpt-5.6-terra",
+    name: "GPT-5.6 Terra",
+    version: "5.6",
+    inputPrice: 2.5,
+    outputPrice: 15.0,
+    contextWindow: 1050000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "openai/gpt-5.6-luna",
+    name: "GPT-5.6 Luna",
+    version: "5.6",
+    inputPrice: 1.0,
+    outputPrice: 6.0,
+    contextWindow: 1050000,
+    maxOutput: 128000,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+
+  // GPT-5.5 — first fully retrained base since GPT-4.5; 1M+ context, native agent +
+  // computer use. Costs 2x gpt-5.4 — routing tiers still default to gpt-5.4 because
+  // it's benchmarked; users can pin 5.5. Superseded as flagship by GPT-5.6 (above).
   {
     id: "openai/gpt-5.5",
     name: "GPT-5.5",

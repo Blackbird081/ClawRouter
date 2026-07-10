@@ -18,8 +18,16 @@ describe("resolveModelAlias", () => {
     expect(resolveModelAlias("haiku")).toBe("anthropic/claude-haiku-4.5");
   });
 
-  it("maps gpt5 shorthand to the newest GPT-5 flagship", () => {
-    expect(resolveModelAlias("gpt5")).toBe("openai/gpt-5.5");
+  it("maps gpt5 shorthand to the stable GPT-5.6 Terra tier (not the flaky Sol tier — #202)", () => {
+    expect(resolveModelAlias("gpt5")).toBe("openai/gpt-5.6-terra");
+    expect(resolveModelAlias("gpt-5.6")).toBe("openai/gpt-5.6-terra");
+    expect(resolveModelAlias("openai/gpt-5.6")).toBe("openai/gpt-5.6-terra");
+  });
+
+  it("keeps explicit GPT-5.6 tier pins routable to their exact tier", () => {
+    expect(resolveModelAlias("gpt-5.6-sol")).toBe("openai/gpt-5.6-sol");
+    expect(resolveModelAlias("gpt-5.6-terra")).toBe("openai/gpt-5.6-terra");
+    expect(resolveModelAlias("gpt-5.6-luna")).toBe("openai/gpt-5.6-luna");
   });
 
   it("resolves aliases even when sent with blockrun/ prefix", () => {

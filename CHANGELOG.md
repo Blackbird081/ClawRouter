@@ -4,6 +4,24 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.219 — July 10, 2026
+
+Add OpenAI's GPT-5.6 family (GA 2026-07-09) — three fixed tiers Sol/Terra/Luna — and route generic aliases to the stable Terra tier rather than the flaky Sol tier ([#202](https://github.com/BlockRunAI/ClawRouter/issues/202), thanks [@0xCheetah1](https://github.com/0xCheetah1)).
+
+### GPT-5.6 Sol / Terra / Luna registered
+
+- Added `openai/gpt-5.6-sol` ($5/$30, deepest-reasoning flagship), `openai/gpt-5.6-terra` ($2.50/$15, balanced everyday tier), and `openai/gpt-5.6-luna` ($1/$6, cost-efficient/latency tier) to `BLOCKRUN_MODELS`, mirroring BlockRun's source-of-truth `models.ts`. All three are 1M context / 128K output. Previously reachable only via raw passthrough of the full model ID.
+- All three added to `top-models.json` (Terra first) so they appear in the `/model` picker and the default-model allowlist.
+
+### Generic aliases resolve to Terra, not Sol ([#202](https://github.com/BlockRunAI/ClawRouter/issues/202))
+
+- **Issue:** `openai/gpt-5.6-sol` requests failed with upstream `server_error` / HTTP 500 after very long (~250s) waits during the GA window — the deepest-reasoning tier is unstable under long-horizon load. Because callers pinned Sol explicitly, ClawRouter (correctly) retried Sol rather than substituting a different model, burning ~251s per attempt.
+- **Fix:** the generic shorthands `gpt5`, `gpt-5.6`, and `openai/gpt-5.6` now resolve to the stable **Terra** tier. Explicit tier pins (`gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`) stay exact, so Sol remains reachable for callers who want the deepest tier and accept the risk. `gpt5` was bumped off `gpt-5.5` to the newer 5.6 generation.
+- **Router:** `openai/gpt-5.6-terra` inserted into the COMPLEX fallback chains of the `auto`, `premium`, and `agentic` profiles (ahead of `gpt-5.5`). Sol is deliberately kept out of all auto-routing — it is opt-in only. No tier primaries changed (promotion needs benchmarks we don't have).
+- **Not a ClawRouter bug:** GPT-5.6's tools-require-`reasoning_effort:"none"` rule is already handled server-side in BlockRun's `openai-passthrough.ts` (`requiresReasoningEffortNoneWithTools`), so no client-side param rewriting was needed. The 500s are genuine upstream instability, which the alias/routing choices route around.
+
+---
+
 ## v0.12.218 — July 9, 2026
 
 ERC-8021 builder-code attribution on x402 payments (with a preserve-existing-codes fix from the OpenClaw side), plus the `/model` picker now honors `top-models.json` order.

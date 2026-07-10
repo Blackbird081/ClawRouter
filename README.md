@@ -429,6 +429,7 @@ No Surf account, no API key — settles directly to Surf's Base treasury in USDC
 | Model                       | Input $/M | Output $/M | ~$/request | Context | Features                                  |
 | --------------------------- | --------: | ---------: | ---------: | ------- | ----------------------------------------- |
 | anthropic/claude-haiku-4.5  |     $1.00 |      $5.00 |    $0.0030 | 200K    | vision, agentic, tools                    |
+| openai/gpt-5.6-luna         |     $1.00 |      $6.00 |    $0.0035 | 1M      | vision, agentic, tools                    |
 | openai/o1-mini              |     $1.10 |      $4.40 |    $0.0028 | 128K    | reasoning, tools                          |
 | openai/o3-mini              |     $1.10 |      $4.40 |    $0.0028 | 128K    | reasoning, tools                          |
 | openai/o4-mini              |     $1.10 |      $4.40 |    $0.0028 | 128K    | reasoning, tools                          |
@@ -447,6 +448,7 @@ No Surf account, no API key — settles directly to Surf's Base treasury in USDC
 | xai/grok-2-vision           |     $2.00 |     $10.00 |    $0.0060 | 131K    | vision, tools                             |
 | openai/gpt-4o               |     $2.50 |     $10.00 |    $0.0063 | 128K    | vision, agentic, tools                    |
 | openai/gpt-5.4              |     $2.50 |     $15.00 |    $0.0088 | 400K    | reasoning, vision, agentic, tools         |
+| openai/gpt-5.6-terra        |     $2.50 |     $15.00 |    $0.0088 | 1M      | reasoning, vision, agentic, tools         |
 
 ### Premium Models ($0.01+/request)
 
@@ -456,6 +458,7 @@ No Surf account, no API key — settles directly to Surf's Base treasury in USDC
 | anthropic/claude-sonnet-4.6 |     $3.00 |     $15.00 |    $0.0090 | 200K    | reasoning, vision, agentic, tools |
 | xai/grok-3                  |     $3.00 |     $15.00 |    $0.0090 | 131K    | reasoning, tools                  |
 | anthropic/claude-opus-4.8   |     $5.00 |     $25.00 |    $0.0150 | 1M      | reasoning, vision, agentic, tools |
+| openai/gpt-5.6-sol          |     $5.00 |     $30.00 |    $0.0175 | 1M      | reasoning, vision, agentic, tools |
 | openai/gpt-5.5              |     $5.00 |     $30.00 |    $0.0175 | 1M      | reasoning, vision, agentic, tools |
 | openai/o1                   |    $15.00 |     $60.00 |    $0.0375 | 200K    | reasoning, tools                  |
 | openai/gpt-5.2-pro          |    $21.00 |    $168.00 |    $0.0945 | 400K    | reasoning, tools                  |
