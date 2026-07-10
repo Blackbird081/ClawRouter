@@ -59093,35 +59093,39 @@ var init_client = __esm({
 // src/top-models.json
 var top_models_default = [
   "auto",
-  "free",
-  "eco",
   "premium",
-  "anthropic/claude-sonnet-5",
-  "anthropic/claude-sonnet-4.6",
+  "eco",
+  "free",
   "anthropic/claude-opus-4.8",
   "anthropic/claude-opus-4.7",
+  "anthropic/claude-sonnet-5",
+  "anthropic/claude-sonnet-4.6",
   "anthropic/claude-haiku-4.5",
   "openai/gpt-5.5",
+  "openai/gpt-5.4-pro",
   "openai/gpt-5.4",
   "openai/gpt-5.4-mini",
-  "openai/gpt-5.4-pro",
-  "openai/gpt-5.3-codex",
   "openai/gpt-5.4-nano",
+  "openai/gpt-5.3-codex",
   "google/gemini-3.1-pro",
-  "google/gemini-3.1-flash-lite",
   "google/gemini-3.5-flash",
+  "google/gemini-3.1-flash-lite",
   "google/gemini-3-flash-preview",
+  "xai/grok-4.3",
+  "xai/grok-4-0709",
+  "xai/grok-4-1-fast-reasoning",
+  "xai/grok-3",
+  "xai/grok-build-0.1",
+  "zai/glm-5.2",
+  "zai/glm-5.1",
+  "zai/glm-5-turbo",
+  "zai/glm-5",
+  "minimax/minimax-m3",
+  "minimax/minimax-m2.7",
+  "moonshot/kimi-k2.7",
   "deepseek/deepseek-v4-pro",
   "deepseek/deepseek-chat",
   "deepseek/deepseek-reasoner",
-  "moonshot/kimi-k2.7",
-  "xai/grok-4.3",
-  "xai/grok-build-0.1",
-  "xai/grok-3",
-  "xai/grok-4-0709",
-  "xai/grok-4-1-fast-reasoning",
-  "minimax/minimax-m3",
-  "minimax/minimax-m2.7",
   "free/gpt-oss-120b",
   "free/gpt-oss-20b",
   "free/mistral-large-3-675b",
@@ -59129,11 +59133,7 @@ var top_models_default = [
   "free/qwen3-next-80b-a3b-instruct",
   "free/llama-4-maverick",
   "free/seed-oss-36b",
-  "free/nemotron-3-nano-omni-30b-a3b-reasoning",
-  "zai/glm-5.2",
-  "zai/glm-5.1",
-  "zai/glm-5",
-  "zai/glm-5-turbo"
+  "free/nemotron-3-nano-omni-30b-a3b-reasoning"
 ];
 
 // src/top-models.ts
@@ -60471,10 +60471,11 @@ var OPENCLAW_MODELS = [
   ...BLOCKRUN_MODELS.filter((m) => !(m.id in MODEL_ALIASES)).map(toOpenClawModel),
   ...ALIAS_MODELS
 ];
-var TOP_MODELS_SET = new Set(TOP_MODELS);
-var VISIBLE_OPENCLAW_MODELS = OPENCLAW_MODELS.filter(
-  (m) => TOP_MODELS_SET.has(m.id)
-);
+var OPENCLAW_MODEL_BY_ID = new Map(OPENCLAW_MODELS.map((m) => [m.id, m]));
+var VISIBLE_OPENCLAW_MODELS = TOP_MODELS.flatMap((id) => {
+  const model = OPENCLAW_MODEL_BY_ID.get(id);
+  return model ? [model] : [];
+});
 function buildProviderModels(baseUrl) {
   return {
     baseUrl: `${baseUrl}/v1`,
@@ -74714,6 +74715,22 @@ function createPayFetchWithPreAuth(baseFetch, client, ttlMs = DEFAULT_TTL_MS, op
   };
 }
 
+// src/builder-code.ts
+var BLOCKRUN_SERVICE_CODE = "bc_5hucoh0l";
+function withBuilderCodeServiceCode(extensions) {
+  const merged = { ...extensions ?? {} };
+  const existing = merged["builder-code"] ?? {};
+  const existingServiceCodes = Array.isArray(existing.info?.s) ? existing.info.s.filter((code) => typeof code === "string") : [];
+  merged["builder-code"] = {
+    ...existing,
+    info: {
+      ...existing.info ?? {},
+      s: existingServiceCodes.includes(BLOCKRUN_SERVICE_CODE) ? [...existingServiceCodes] : [...existingServiceCodes, BLOCKRUN_SERVICE_CODE]
+    }
+  };
+  return merged;
+}
+
 // node_modules/@x402/evm/dist/esm/chunk-MACPBXCT.mjs
 var authorizationTypes = {
   TransferWithAuthorization: [
@@ -81257,6 +81274,11 @@ async function startProxy(options) {
     registerExactSvmScheme2(x402, { signer: solanaSigner });
     console.log(`[ClawRouter] Solana wallet: ${solanaAddress}`);
   }
+  x402.onAfterPaymentCreation(async (context) => {
+    if (!context.selectedRequirements.network.startsWith("eip155")) return;
+    const payload = context.paymentPayload;
+    payload.extensions = withBuilderCodeServiceCode(payload.extensions);
+  });
   x402.onAfterPaymentCreation(async (context) => {
     const network = context.selectedRequirements.network;
     const chain3 = network.startsWith("eip155") ? "Base (EVM)" : network.startsWith("solana") ? "Solana" : network;
