@@ -32,12 +32,12 @@ Use `blockrun/auto` (or `/model auto`) for the best quality/price balance.
 
 Use `blockrun/eco` for maximum cost savings. The first stop is the free tier, so simple requests can cost $0.00.
 
-| Tier      | Primary Model               | Input | Output | Fallback chain (in order)                                                                                                |
-| --------- | --------------------------- | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
-| SIMPLE    | free/nemotron-3.5-lightning | $0.00 | $0.00  | nemotron-3-nano-30b (free) → gemini-2.5-flash-lite → glm-5.3-flash → gpt-5.6-luna → gpt-5.4-nano → gemini-3.1-flash-lite |
-| MEDIUM    | zai/glm-5.3-flash           | $0.15 | $0.50  | deepseek-chat → gemini-3.1-flash-lite → gpt-5.6-luna → gpt-5.4-nano → gemini-2.5-flash-lite → gemini-2.5-flash           |
-| COMPLEX   | zai/glm-5.3-flash           | $0.15 | $0.50  | deepseek-chat → minimax-m3 → deepseek-v4-pro → gemini-3.1-flash-lite → gemini-2.5-flash                                  |
-| REASONING | deepseek/deepseek-reasoner  | $0.14 | $0.28  | deepseek-v4-pro → qwen3.7-plus → minimax-m3 → glm-5.3-flash                                                              |
+| Tier      | Primary Model               | Input | Output | Fallback chain (in order)                                                                                                 |
+| --------- | --------------------------- | ----- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
+| SIMPLE    | free/nemotron-3.5-lightning | $0.00 | $0.00  | nemotron-3-nano-omni (free) → gemini-2.5-flash-lite → glm-5.3-flash → gpt-5.6-luna → gpt-5.4-nano → gemini-3.1-flash-lite |
+| MEDIUM    | zai/glm-5.3-flash           | $0.15 | $0.50  | deepseek-chat → gemini-3.1-flash-lite → gpt-5.6-luna → gpt-5.4-nano → gemini-2.5-flash-lite → gemini-2.5-flash            |
+| COMPLEX   | zai/glm-5.3-flash           | $0.15 | $0.50  | deepseek-chat → minimax-m3 → deepseek-v4-pro → gemini-3.1-flash-lite → gemini-2.5-flash                                   |
+| REASONING | deepseek/deepseek-reasoner  | $0.14 | $0.28  | deepseek-v4-pro → qwen3.7-plus → minimax-m3 → glm-5.3-flash                                                               |
 
 The two free rungs at the head of ECO SIMPLE follow NVIDIA's free hosting, which retires models without notice (deepseek-v4-flash 410'd 2026-08-12, seed-oss-36b 2026-08-03, gpt-oss-120b hung 2026-08-16, and on 2026-08-30 NVIDIA retired FOUR of the five visible free models at once). Each retirement retargets the free rungs to the current free tier; the paid rungs never move. `src/router/free-model-liveness.test.ts` fails the build if a chain names a free model the picker no longer lists.
 
@@ -75,11 +75,11 @@ Set `routing.overrides.agenticMode: false` to disable the agentic tier set, or `
 
 ## FREE (`/model free`)
 
-`free` is an alias, not a routed profile: it pins the free-tier default, currently **`free/nemotron-3.5-lightning`** — the same model that opens ECO SIMPLE. If that model is excluded (`/exclude add lightning`) or the budget cap forces a free fallback, the proxy walks the free cascade in this order: nemotron-3.5-lightning → nemotron-3-nano-30b → laguna-xs-2.1 → north-mini-code → nemotron-3-nano-omni-30b-a3b-reasoning → nemotron-3-ultra-550b → llama-3.2-11b-vision. All seven are $0.00 and need no USDC, and all seven are treated as **text-only** — see the vision note below.
+`free` is an alias, not a routed profile: it pins the free-tier default, currently **`free/nemotron-3.5-lightning`** — the same model that opens ECO SIMPLE. If that model is excluded (`/exclude add lightning`) or the budget cap forces a free fallback, the proxy walks the free cascade in this order: nemotron-3.5-lightning → laguna-xs-2.1 → north-mini-code → nemotron-3-nano-omni-30b-a3b-reasoning → nemotron-3-ultra-550b → llama-3.2-11b-vision. All six are $0.00 and need no USDC, and all six are treated as **text-only** — see the vision note below.
 
-The order is not arbitrary. The head is whatever the gateway itself redirects the previous head to, so the proxy and the gateway never name different models. After it comes the fastest rung, then the two sub-second coders — adjacent on purpose, because they sit on _different_ capacity pools (our own NVIDIA key vs OpenRouter's $0 pool), so one pool's outage cannot take both. The vision model sits mid-chain, and the two slowest rungs go last. The tier stopped being NVIDIA-only on 2026-08-30: two of the seven come from Cohere and Poolside.
+The order is not arbitrary. The head is whatever the gateway itself redirects the previous head to, so the proxy and the gateway never name different models. After it come the two sub-second coders — adjacent on purpose, because they sit on _different_ capacity pools (our own NVIDIA key vs OpenRouter's $0 pool), so one pool's outage cannot take both. The vision model sits mid-chain, and the two slowest rungs go last. The tier stopped being NVIDIA-only on 2026-08-30: two of the six come from Cohere and Poolside. The fastest rung, `nemotron-3-nano-30b`, left on 2026-09-08 when NVIDIA deprovisioned it for blockrun's account; its aliases (`nano-30b`, `nemotron-nano`) now follow the gateway's redirect to `nemotron-3-nano-omni`.
 
-Pin any of them directly with `/model lightning`, `/model nano-30b`, `/model laguna`, `/model north-mini`, `/model nemotron-omni`, `/model ultra-550b` or `/model llama-vision`.
+Pin any of them directly with `/model lightning`, `/model laguna`, `/model north-mini`, `/model nemotron-omni`, `/model ultra-550b` or `/model llama-vision`.
 
 **No free model carries the `vision` flag,** even the two the upstream catalogs advertise as vision-capable. A 64×64 solid-colour probe on 2026-08-31 got the right answer 1 time in 4 from `nemotron-3-nano-omni` on Base, and "white" for red on Solana — where the response's own `model` field showed a silent fallback to a text model. `llama-3.2-11b-vision`, despite the name, said "I'm unable to see the image" on 3 of 3 while a plain-text control passed. Every one of those is an HTTP 200, so the caller gets a confident wrong answer with nothing to branch on. Since `vision` is what `filterByVision()` uses to _aim_ image turns at a model, flagging them would route real traffic into that. Requests carrying an `image_url` go to a paid vision model.
 

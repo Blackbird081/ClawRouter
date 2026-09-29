@@ -348,9 +348,12 @@ export const MODEL_ALIASES: Record<string, string> = {
   "step-3.7-flash": "free/step-3.7-flash",
   // nemotron-nano-9b-v2 hit 410 on 2026-08-30; the generic shorthands follow
   // blockrun's redirect to its replacement, while the 9b-naming pins above stay
-  // on the real id (the gateway resolves them).
-  "nemotron-nano-9b": "free/nemotron-3-nano-30b",
-  "nemotron-nano": "free/nemotron-3-nano-30b",
+  // on the real id (the gateway resolves them). That replacement,
+  // nemotron-3-nano-30b, was itself delisted 2026-09-08 and blockrun now sends
+  // both ids to nano-omni, so these follow it there rather than chain through a
+  // dead model.
+  "nemotron-nano-9b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
+  "nemotron-nano": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
   // nemotron-nano-12b-v2-vl hit 410 the same day; vision in, vision out — the
   // target is blockrun's own, and nano-omni is the only vision-capable free
   // model left.
@@ -377,9 +380,11 @@ export const MODEL_ALIASES: Record<string, string> = {
   "devstral-2": "free/nemotron-3.5-lightning",
   maverick: "free/llama-4-maverick", // explicit-ish pin — gateway redirects
   // ── The 2026-08-30 free lineup (blockrun #448) ────────────────────────────
-  // nvidia/* bridges for the four NVIDIA-hosted additions.
+  // nvidia/* bridges for the four NVIDIA-hosted additions. nemotron-3-nano-30b
+  // was delisted 2026-09-08 (per-account 404 at NVIDIA); its names follow
+  // blockrun's own redirect to nano-omni, the same family and size (30B-A3B).
   "nvidia/nemotron-3.5-lightning": "free/nemotron-3.5-lightning",
-  "nvidia/nemotron-3-nano-30b": "free/nemotron-3-nano-30b",
+  "nvidia/nemotron-3-nano-30b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
   "nvidia/nemotron-3-ultra-550b": "free/nemotron-3-ultra-550b",
   "nvidia/llama-3.2-11b-vision": "free/llama-3.2-11b-vision",
   // The two non-NVIDIA free models keep the `free/` picker convention; their
@@ -391,8 +396,8 @@ export const MODEL_ALIASES: Record<string, string> = {
   lightning: "free/nemotron-3.5-lightning",
   "nemotron-lightning": "free/nemotron-3.5-lightning",
   "nemotron-3.5-lightning": "free/nemotron-3.5-lightning",
-  "nano-30b": "free/nemotron-3-nano-30b",
-  "nemotron-nano-30b": "free/nemotron-3-nano-30b",
+  "nano-30b": "free/nemotron-3-nano-omni-30b-a3b-reasoning", // delisted 2026-09-08 — see above
+  "nemotron-nano-30b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
   "ultra-550b": "free/nemotron-3-ultra-550b",
   "nemotron-ultra-550b": "free/nemotron-3-ultra-550b",
   "llama-vision": "free/llama-3.2-11b-vision",
@@ -1903,8 +1908,9 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
   },
   {
     // NVIDIA Nemotron Nano 9B v2: fast lightweight generalist, 131K context.
-    // EOL'd 2026-08-30 (410 Gone, same sweep). Gateway redirects it to
-    // nemotron-3-nano-30b. Entry kept for pins; off the picker and the cascade.
+    // EOL'd 2026-08-30 (410 Gone, same sweep). Gateway redirected it to
+    // nemotron-3-nano-30b until that was delisted too (2026-09-08); both now go
+    // to nano-omni. Entry kept for pins; off the picker and the cascade.
     id: "free/nemotron-nano-9b-v2",
     name: "[Free] Nemotron Nano 9B v2",
     version: "nano-9b-v2",
@@ -1965,9 +1971,12 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     reasoning: true,
   },
   {
-    // Nemotron 3 Nano 30B-A3B — the fastest free model in the catalog
-    // (~121 tok/s on a realistic workload, not a 16-token ping). Returns
-    // reasoning_content. Also the tertiary rung of blockrun's own free cascade.
+    // Nemotron 3 Nano 30B-A3B — was the fastest free model in the catalog
+    // (~121 tok/s). DELISTED 2026-09-08: NVIDIA deprovisioned it for blockrun's
+    // account (a structured per-account 404, nine days after listing), and the
+    // gateway now redirects it to nano-omni. Entry kept so explicit pins stay
+    // routable; off the picker and the FREE_MODELS cascade, and every alias
+    // that named it follows the gateway's redirect.
     id: "free/nemotron-3-nano-30b",
     name: "[Free] Nemotron 3 Nano 30B",
     version: "3-nano-30b",

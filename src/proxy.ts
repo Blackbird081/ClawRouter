@@ -194,20 +194,24 @@ const ROUTING_PROFILES = new Set([
 // gateway probe of every rung:
 //   1. lightning  — blockrun's own retarget of the old head, so the proxy and
 //                   the gateway name the same model. 1M ctx, 1.3s with tools.
-//   2. nano-30b   — fastest in the tier (~121 tok/s).
-//   3/4. laguna + north-mini — both sub-second coders, and deliberately adjacent
+//   2/3. laguna + north-mini — both sub-second coders, and deliberately adjacent
 //                   because they sit on DIFFERENT capacity pools (our NVIDIA key
 //                   vs OpenRouter's $0 pool), so one pool's outage does not take
 //                   both rungs.
-//   5. nano-omni  — the only vision-capable free model left.
-//   6. ultra-550b — 1M ctx and the largest we list, but 16.8s and blockrun
+//   4. nano-omni  — the only vision-capable free model left.
+//   5. ultra-550b — 1M ctx and the largest we list, but 16.8s and blockrun
 //                   measured 3 of 15 calls returning an HTTP 200 that carried an
 //                   upstream 502/503 error object instead of choices.
-//   7. llama-vision — slowest (~18 tok/s), so last; it is here because it is the
+//   6. llama-vision — slowest (~18 tok/s), so last; it is here because it is the
 //                   only free Llama NVIDIA still serves.
+//
+// 2026-09-08: nemotron-3-nano-30b (was rung 2, "fastest in the tier") left the
+// cascade. NVIDIA deprovisioned it for blockrun's account — a structured
+// per-account 404 — and the gateway delisted it and now redirects it to
+// nano-omni. It stayed here three weeks, so startup logged it as unserved and
+// skipped it on every boot.
 const FREE_MODELS = new Set([
   "free/nemotron-3.5-lightning", // free-tier default — 1M ctx, thinking mode
-  "free/nemotron-3-nano-30b", // fastest free model (~121 tok/s)
   "free/laguna-xs-2.1", // coding, ~161 tok/s — on our NVIDIA key
   "free/north-mini-code", // coding, 607ms median — OpenRouter $0 pool
   "free/nemotron-3-nano-omni-30b-a3b-reasoning", // vision (text/image/video/audio)

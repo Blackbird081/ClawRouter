@@ -491,7 +491,6 @@ No Surf account, no API key — settles directly to Surf's Base treasury in USDC
 | Model                                       | Input $/M | Output $/M | ~$/request | Context | Features                                     |
 | ------------------------------------------- | --------: | ---------: | ---------: | ------- | -------------------------------------------- |
 | free/nemotron-3.5-lightning                 |  **FREE** |   **FREE** |     **$0** | 1M      | reasoning (thinking mode) — the free default |
-| free/nemotron-3-nano-30b                    |  **FREE** |   **FREE** |     **$0** | 131K    | fastest free model (~121 tok/s)              |
 | free/laguna-xs-2.1                          |  **FREE** |   **FREE** |     **$0** | 131K    | coding (Poolside, ~161 tok/s)                |
 | free/north-mini-code                        |  **FREE** |   **FREE** |     **$0** | 256K    | coding (Cohere, sub-second)                  |
 | free/nemotron-3-nano-omni-30b-a3b-reasoning |  **FREE** |   **FREE** |     **$0** | 256K    | reasoning (text only — see note)             |
@@ -575,7 +574,7 @@ No Surf account, no API key — settles directly to Surf's Base treasury in USDC
 | openai/gpt-5.4-pro          |    $30.00 |    $180.00 |    $0.1050 | 400K    | reasoning, tools                  |
 | openai/gpt-5.5-pro          |    $30.00 |    $180.00 |    $0.1050 | 1M      | reasoning, vision, tools          |
 
-> **Free tier:** <!-- br:models.free -->6<!-- /br:models.free --> open-weight models cost nothing — `/model free` pins the free default (`nemotron-3.5-lightning`, with the other six as fallbacks), `/model eco` opens on it, or pick one directly (e.g., `/model lightning` for 1M-context reasoning, `/model north-mini` or `/model laguna` for fast coding, `/model nano-30b` for the fastest).
+> **Free tier:** <!-- br:models.free -->6<!-- /br:models.free --> open-weight models cost nothing — `/model free` pins the free default (`nemotron-3.5-lightning`, with the other five as fallbacks), `/model eco` opens on it, or pick one directly (e.g., `/model lightning` for 1M-context reasoning, `/model north-mini` or `/model laguna` for fast coding).
 >
 > **No free vision.** Two free models are catalogued as vision-capable and neither reliably is: on a 64×64 solid-colour probe `nemotron-3-nano-omni` was right 1 of 4 times on Base and answered "white" for red on Solana, and `llama-3.2-11b-vision` replied "I'm unable to see the image" 3 of 3 while answering text fine. Both return HTTP 200, so a wrong answer arrives with no error to branch on. ClawRouter therefore does not flag them for vision, and requests carrying an `image_url` route to a paid vision model instead.
 > **Best value:** `gpt-5-nano` and `gemini-2.5-flash-lite` deliver strong results at ~$0.0003/request.
@@ -972,7 +971,7 @@ wallet, no key, no signup. See [Paying with a credit card](#paying-with-a-credit
 
 ### Is ClawRouter free?
 
-ClawRouter itself is free and MIT licensed. You pay only for the LLM API calls routed through it — and several open-weight models (`nemotron-3.5-lightning`, `nemotron-3-nano-30b`, `laguna-xs-2.1`, `north-mini-code`, `nemotron-3-nano-omni-30b-a3b-reasoning`, `nemotron-3-ultra-550b`, `llama-3.2-11b-vision`) are completely free (text only). Use `/model free` to smart-route across them, or pick any by name.
+ClawRouter itself is free and MIT licensed. You pay only for the LLM API calls routed through it — and several open-weight models (`nemotron-3.5-lightning`, `laguna-xs-2.1`, `north-mini-code`, `nemotron-3-nano-omni-30b-a3b-reasoning`, `nemotron-3-ultra-550b`, `llama-3.2-11b-vision`) are completely free (text only). Use `/model free` to smart-route across them, or pick any by name.
 
 ---
 

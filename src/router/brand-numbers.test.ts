@@ -85,6 +85,29 @@ describe("package.json description", () => {
   });
 });
 
+describe("plugin descriptions", () => {
+  // openclaw.plugin.json is JSON and src/index.ts is code, so neither can hold a
+  // marker. They said 92% and 78% while every synced surface said 84%. Every
+  // "NN% cost savings" in them must be the published auto figure, and at least
+  // one must exist — a claim reworded out of the pattern should fail here, not
+  // pass because nothing matched.
+  const pct = (
+    JSON.parse(readFileSync("brand-numbers.json", "utf8")) as {
+      savings: { autoVsBaselinePct: number };
+    }
+  ).savings.autoVsBaselinePct;
+
+  for (const file of ["openclaw.plugin.json", "src/index.ts"]) {
+    it(`${file} quotes the published savings figure`, () => {
+      const claims = [...readFileSync(file, "utf8").matchAll(/(\d+)% cost savings/g)].map((m) =>
+        Number(m[1]),
+      );
+      expect(claims.length, `no "NN% cost savings" claim found in ${file}`).toBeGreaterThan(0);
+      expect(claims).toEqual(claims.map(() => pct));
+    });
+  }
+});
+
 describe("README hero badge", () => {
   // The free-model count is baked into a shields URL and its alt text. A marker
   // cannot go inside an HTML attribute without breaking the tag, so this is the

@@ -1,7 +1,7 @@
 /**
  * @blockrun/clawrouter
  *
- * Smart LLM router for OpenClaw — 82 models, x402 micropayments, 78% cost savings.
+ * Smart LLM router for OpenClaw — 82 models, x402 micropayments, 84% cost savings.
  * Routes each request to the cheapest model that can handle it.
  *
  * Usage:
@@ -1977,7 +1977,7 @@ const plugin: OpenClawPluginDefinition = {
   // product, different id. See #305.
   id: BLOCKRUN_PLUGIN_ID,
   name: "BlockRun ClawRouter",
-  description: "Smart LLM router — 82 models, x402 micropayments, 78% cost savings",
+  description: "Smart LLM router — 82 models, x402 micropayments, 84% cost savings",
   version: VERSION,
 
   register(api: OpenClawPluginApi) {

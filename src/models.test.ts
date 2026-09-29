@@ -256,7 +256,7 @@ describe("capability flags vs blockrun's catalog", () => {
     for (const id of [
       "google/gemini-3-flash-preview",
       "free/nemotron-3.5-lightning",
-      "free/nemotron-3-nano-30b",
+      "free/nemotron-3-nano-omni-30b-a3b-reasoning",
       "free/nemotron-3-ultra-550b",
       "free/north-mini-code",
       "zai/glm-5.3",
