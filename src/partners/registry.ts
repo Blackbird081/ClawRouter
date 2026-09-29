@@ -636,11 +636,12 @@ export const PARTNER_SERVICES: PartnerServiceDefinition[] = [
     name: "Image Generation",
     partner: "BlockRun",
     category: "Image & Video",
-    shortDescription: "9 image models (Nano Banana, GPT Image, ...)",
+    shortDescription: "12 image models (Nano Banana, GPT Image, ...)",
     description:
       "Generate an image from a text prompt. Models available: google/nano-banana (default), " +
       "google/nano-banana-2, google/nano-banana-pro (up to 4K), openai/gpt-image-1, " +
-      "openai/gpt-image-2, bytedance/seedream-5-pro, xai/grok-imagine-image, " +
+      "openai/gpt-image-2, openai/gpt-image-2.5-flare, openai/gpt-image-2.5-sunburst, " +
+      "bytedance/seedream-5-pro, xai/grok-imagine-image, xai/grok-imagine-image-2.0, " +
       "xai/grok-imagine-image-pro, zai/cogview-4. " +
       "Returns a local http://localhost:8402/images/<file>.png URL.",
     proxyPath: "/images/generations",
@@ -674,10 +675,10 @@ export const PARTNER_SERVICES: PartnerServiceDefinition[] = [
       },
     ],
     pricing: {
-      perUnit: "$0.015–$0.15",
+      perUnit: "$0.015–$0.56",
       unit: "image",
       minimum: "$0.015 (cogview-4)",
-      maximum: "$0.15 (nano-banana-pro 4K)",
+      maximum: "$0.56 (gpt-image-2.5 at 1536x1024)",
     },
     example: {
       input: { model: "google/nano-banana", prompt: "a golden retriever surfing on a wave" },
@@ -689,10 +690,13 @@ export const PARTNER_SERVICES: PartnerServiceDefinition[] = [
     name: "Image Edit / Inpainting",
     partner: "BlockRun",
     category: "Image & Video",
-    shortDescription: "Edit existing image (gpt-image-1)",
+    shortDescription: "Edit existing image (GPT Image, Nano Banana)",
     description:
-      "Edit or re-style an existing image via openai/gpt-image-1. " +
-      "Supply `image` as a data URI, https URL, or local file path; optional `mask` for inpainting.",
+      "Edit or re-style an existing image. Models: openai/gpt-image-1 (default), " +
+      "openai/gpt-image-2, openai/gpt-image-2.5-sunburst, google/nano-banana, " +
+      "google/nano-banana-2, google/nano-banana-pro. " +
+      "Supply `image` as a data URI, https URL, or local file path; optional `mask` for " +
+      "inpainting (OpenAI models only — Nano Banana edits by prompt).",
     proxyPath: "/images/image2image",
     method: "POST",
     params: [
@@ -714,12 +718,19 @@ export const PARTNER_SERVICES: PartnerServiceDefinition[] = [
         description: "Optional inpainting mask in the same formats as `image`.",
         required: false,
       },
+      {
+        name: "model",
+        type: "string",
+        description:
+          "Full model ID (e.g. 'openai/gpt-image-2.5-sunburst', 'google/nano-banana'). Default: openai/gpt-image-1.",
+        required: false,
+      },
     ],
     pricing: {
-      perUnit: "$0.02–$0.04",
+      perUnit: "$0.02–$0.56",
       unit: "image",
-      minimum: "$0.02",
-      maximum: "$0.04 (1536x1024)",
+      minimum: "$0.02 (gpt-image-1)",
+      maximum: "$0.56 (gpt-image-2.5-sunburst at 1536x1024)",
     },
     example: {
       input: { prompt: "make the sky sunset orange", image: "~/Pictures/beach.png" },

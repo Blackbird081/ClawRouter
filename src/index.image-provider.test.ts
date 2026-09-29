@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { buildImageGenerationProvider } from "./index.js";
@@ -74,6 +76,31 @@ describe("/cr-imagegen model aliases", () => {
   it("keeps the legacy dall-e-3 shorthands routed to the OpenAI successor", () => {
     expect(IMAGE_MODEL_ALIASES["dall-e-3"]).toBe("openai/gpt-image-2");
     expect(IMAGE_MODEL_ALIASES["dalle"]).toBe("openai/gpt-image-2");
+  });
+
+  it("pins GPT Image 2.5 by name, with no bare gpt-image-2.5 to guess between them", () => {
+    expect(IMAGE_MODEL_ALIASES["flare"]).toBe("openai/gpt-image-2.5-flare");
+    expect(IMAGE_MODEL_ALIASES["sunburst"]).toBe("openai/gpt-image-2.5-sunburst");
+    expect(IMAGE_MODEL_ALIASES["gpt-image-2.5"]).toBeUndefined();
+  });
+
+  it("leaves bare grok-imagine on the $0.02 model — 2.0 is an explicit pin at 2x", () => {
+    expect(IMAGE_MODEL_ALIASES["grok-imagine"]).toBe("xai/grok-imagine-image");
+    expect(IMAGE_MODEL_ALIASES["grok-imagine-2"]).toBe("xai/grok-imagine-image-2.0");
+  });
+});
+
+describe("image catalog parity with blockrun", () => {
+  it("carries as many image models as blockrun publishes", () => {
+    // brand-numbers.json is blockrun's published count. On 2026-09-15 the
+    // README marker moved to 12 while IMAGE_PRICING still had 9, and every
+    // surface above passed — they all derive from IMAGE_PRICING, so a model
+    // missing there is missing everywhere, consistently. Only an outside
+    // number catches that.
+    const published = JSON.parse(readFileSync("brand-numbers.json", "utf8")) as {
+      models: { image: number };
+    };
+    expect(IMAGE_MODEL_IDS).toHaveLength(published.models.image);
   });
 });
 

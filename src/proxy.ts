@@ -1873,6 +1873,18 @@ const IMAGE_PRICING: Record<string, { default: number; sizes?: Record<string, nu
     default: 0.06,
     sizes: { "1024x1024": 0.06, "1536x1024": 0.12, "1024x1536": 0.12 },
   },
+  // GPT Image 2.5 bills upstream by token and the caller picks `quality`, so
+  // blockrun prices both at a flat rate that covers the `max` tier. Flare and
+  // Sunburst cost the same; Sunburst is the one the edit route accepts.
+  // Sizes + prices live-probed 2026-09-29 (Base 402 quotes; 2048x2048 → 400).
+  "openai/gpt-image-2.5-flare": {
+    default: 0.28,
+    sizes: { "1024x1024": 0.28, "1536x1024": 0.56, "1024x1536": 0.56 },
+  },
+  "openai/gpt-image-2.5-sunburst": {
+    default: 0.28,
+    sizes: { "1024x1024": 0.28, "1536x1024": 0.56, "1024x1536": 0.56 },
+  },
   "bytedance/seedream-5-pro": {
     default: 0.045,
     // Full size list live-probed 2026-08-23 (gateway 402 quotes, base price):
@@ -1897,6 +1909,8 @@ const IMAGE_PRICING: Record<string, { default: number; sizes?: Record<string, nu
   },
   "xai/grok-imagine-image": { default: 0.02, sizes: { "1024x1024": 0.02 } },
   "xai/grok-imagine-image-pro": { default: 0.07, sizes: { "1024x1024": 0.07 } },
+  // Grok Imagine 2.0 sits between Grok Imagine and Pro on price; 1024x1024 only.
+  "xai/grok-imagine-image-2.0": { default: 0.04, sizes: { "1024x1024": 0.04 } },
   "zai/cogview-4": {
     default: 0.015,
     sizes: {
@@ -1950,6 +1964,12 @@ export const IMAGE_MODEL_ALIASES: Record<string, string> = Object.freeze({
   "gpt-image": "openai/gpt-image-1",
   "gpt-image-1": "openai/gpt-image-1",
   "gpt-image-2": "openai/gpt-image-2",
+  // No bare `gpt-image-2.5`: Flare and Sunburst are different models at the
+  // same price, and neither is the obvious default.
+  "gpt-image-2.5-flare": "openai/gpt-image-2.5-flare",
+  flare: "openai/gpt-image-2.5-flare",
+  "gpt-image-2.5-sunburst": "openai/gpt-image-2.5-sunburst",
+  sunburst: "openai/gpt-image-2.5-sunburst",
   seedream: "bytedance/seedream-5-pro",
   banana: "google/nano-banana",
   "nano-banana": "google/nano-banana",
@@ -1959,6 +1979,9 @@ export const IMAGE_MODEL_ALIASES: Record<string, string> = Object.freeze({
   "nano-banana-pro": "google/nano-banana-pro",
   "grok-imagine": "xai/grok-imagine-image",
   "grok-imagine-pro": "xai/grok-imagine-image-pro",
+  // Bare `grok-imagine` stays on the $0.02 model; 2.0 is an explicit pin.
+  "grok-imagine-2": "xai/grok-imagine-image-2.0",
+  "grok-imagine-2.0": "xai/grok-imagine-image-2.0",
   cogview: "zai/cogview-4",
 });
 
@@ -4964,8 +4987,11 @@ async function proxyRequest(
             "  banana-pro        Google Gemini Pro — $0.10/image (up to 4K)",
             "  gpt-image         OpenAI GPT Image 1 — $0.02/image",
             "  gpt-image-2       OpenAI GPT Image 2 — $0.06/image",
+            "  flare             OpenAI GPT Image 2.5 Flare (fast) — $0.28/image",
+            "  sunburst          OpenAI GPT Image 2.5 Sunburst (precision) — $0.28/image",
             "  seedream          ByteDance Seedream 5 Pro — $0.045/image",
             "  grok-imagine      xAI Grok Imagine — $0.02/image",
+            "  grok-imagine-2    xAI Grok Imagine 2.0 — $0.04/image",
             "  grok-imagine-pro  xAI Grok Imagine Pro — $0.07/image",
             "  cogview           Zhipu CogView-4 — $0.015/image",
             "",
@@ -5268,9 +5294,17 @@ async function proxyRequest(
         const img2imgModelMatch = imgArgs.match(/--model\s+(\S+)/);
         if (img2imgModelMatch) {
           const raw = img2imgModelMatch[1];
+          // Shorthands for the models blockrun's image2image route accepts
+          // (EDIT_SUPPORTED_MODELS). Flare is generation-only — the route 400s it.
           const IMG2IMG_ALIASES: Record<string, string> = {
             "gpt-image": "openai/gpt-image-1",
             "gpt-image-1": "openai/gpt-image-1",
+            "gpt-image-2": "openai/gpt-image-2",
+            sunburst: "openai/gpt-image-2.5-sunburst",
+            "gpt-image-2.5-sunburst": "openai/gpt-image-2.5-sunburst",
+            "nano-banana": "google/nano-banana",
+            "banana-2": "google/nano-banana-2",
+            "banana-pro": "google/nano-banana-pro",
           };
           img2imgModel = IMG2IMG_ALIASES[raw] ?? raw;
           img2imgPrompt = img2imgPrompt.replace(/--model\s+\S+/, "").trim();
@@ -5287,6 +5321,11 @@ async function proxyRequest(
           "",
           "Models:",
           "  gpt-image-1      OpenAI GPT Image 1 — $0.02/image",
+          "  gpt-image-2      OpenAI GPT Image 2 — $0.06/image",
+          "  sunburst         OpenAI GPT Image 2.5 Sunburst (precision edits) — $0.28/image",
+          "  nano-banana      Google Gemini Flash — $0.05/image (no --mask)",
+          "  banana-2         Google Nano Banana 2 — $0.09/image (no --mask)",
+          "  banana-pro       Google Gemini Pro — $0.10/image (no --mask)",
           "",
           "Examples:",
           "  /img2img --image ~/photo.png change background to starry sky",

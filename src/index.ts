@@ -1341,8 +1341,11 @@ export function buildImageGenerationProvider(): ImageGenerationProviderPlugin {
       "google/nano-banana-pro",
       "openai/gpt-image-1",
       "openai/gpt-image-2",
+      "openai/gpt-image-2.5-flare",
+      "openai/gpt-image-2.5-sunburst",
       "bytedance/seedream-5-pro",
       "xai/grok-imagine-image",
+      "xai/grok-imagine-image-2.0",
       "xai/grok-imagine-image-pro",
       "zai/cogview-4",
     ],
@@ -1353,8 +1356,10 @@ export function buildImageGenerationProvider(): ImageGenerationProviderPlugin {
         supportsAspectRatio: false,
         supportsResolution: false,
       },
-      // Only openai/gpt-image-1 supports edit server-side; OpenClaw's UI picks a
-      // compatible model at edit time via /v1/images/image2image.
+      // Edit is served for gpt-image-1, gpt-image-2, gpt-image-2.5-sunburst and
+      // the three nano-banana models (blockrun EDIT_SUPPORTED_MODELS; Flare is
+      // rejected); OpenClaw's UI picks a compatible model at edit time via
+      // /v1/images/image2image.
       edit: { enabled: true },
       // Union of every size the gateway accepts across the models above,
       // live-probed 2026-08-23 (the gateway validates size per-model BEFORE
