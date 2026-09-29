@@ -318,17 +318,20 @@ Generate images directly from chat with `/cr-imagegen`:
 
 > The slash command is `/cr-imagegen` to avoid colliding with Telegram channel commands. Typing `/imagegen` in chat still works for backward compatibility.
 
-| Model                        | Provider             | Price        | Max Size  |
-| ---------------------------- | -------------------- | ------------ | --------- |
-| `nano-banana`                | Google Gemini Flash  | $0.05/image  | 1024x1024 |
-| `banana-2`                   | Google Nano Banana 2 | $0.09/image  | 1024x1024 |
-| `banana-pro`                 | Google Gemini Pro    | $0.10/image  | 4096x4096 |
-| `gpt-image`                  | OpenAI GPT Image 1   | $0.02/image  | 1536x1024 |
-| `gpt-image-2`                | OpenAI GPT Image 2   | $0.06/image  | 1536x1024 |
-| `seedream`                   | ByteDance Seedream 5 | $0.045/image | 2848x1600 |
-| `xai/grok-imagine-image`     | xAI Grok Imagine     | $0.02/image  | 1024x1024 |
-| `xai/grok-imagine-image-pro` | xAI Grok Imagine Pro | $0.07/image  | 1024x1024 |
-| `zai/cogview-4`              | Zhipu CogView-4      | $0.015/image | 1440x1440 |
+| Model                        | Provider                      | Price        | Max Size  |
+| ---------------------------- | ----------------------------- | ------------ | --------- |
+| `nano-banana`                | Google Gemini Flash           | $0.05/image  | 1024x1024 |
+| `banana-2`                   | Google Nano Banana 2          | $0.09/image  | 1024x1024 |
+| `banana-pro`                 | Google Gemini Pro             | $0.10/image  | 4096x4096 |
+| `gpt-image`                  | OpenAI GPT Image 1            | $0.02/image  | 1536x1024 |
+| `gpt-image-2`                | OpenAI GPT Image 2            | $0.06/image  | 1536x1024 |
+| `flare`                      | OpenAI GPT Image 2.5 Flare    | $0.28/image  | 1536x1024 |
+| `sunburst`                   | OpenAI GPT Image 2.5 Sunburst | $0.28/image  | 1536x1024 |
+| `seedream`                   | ByteDance Seedream 5          | $0.045/image | 2848x1600 |
+| `xai/grok-imagine-image`     | xAI Grok Imagine              | $0.02/image  | 1024x1024 |
+| `grok-imagine-2`             | xAI Grok Imagine 2.0          | $0.04/image  | 1024x1024 |
+| `xai/grok-imagine-image-pro` | xAI Grok Imagine Pro          | $0.07/image  | 1024x1024 |
+| `zai/cogview-4`              | Zhipu CogView-4               | $0.015/image | 1440x1440 |
 
 ## Video Generation
 
@@ -377,12 +380,12 @@ Edit existing images with `/img2img`:
 /img2img --image ./cat.jpg --mask ./mask.png remove the background
 ```
 
-| Option            | Required | Description                           |
-| ----------------- | -------- | ------------------------------------- |
-| `--image <path>`  | Yes      | Local image file path (supports `~/`) |
-| `--mask <path>`   | No       | Mask image (white = area to edit)     |
-| `--model <model>` | No       | Model to use (default: `gpt-image-1`) |
-| `--size <WxH>`    | No       | Output size (default: `1024x1024`)    |
+| Option            | Required | Description                                                                                                           |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `--image <path>`  | Yes      | Local image file path (supports `~/`)                                                                                 |
+| `--mask <path>`   | No       | Mask image (white = area to edit)                                                                                     |
+| `--model <model>` | No       | `gpt-image-1` (default), `gpt-image-2`, `sunburst`, `nano-banana`, `banana-2`, `banana-pro` — `--mask` is OpenAI-only |
+| `--size <WxH>`    | No       | Output size (default: `1024x1024`)                                                                                    |
 
 **API endpoint:** `POST http://localhost:8402/v1/images/image2image` — see [full docs](docs/image-generation.md#post-v1imagesimage2image).
 

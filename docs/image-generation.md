@@ -51,17 +51,20 @@ The returned URL is a publicly hosted image, ready to use in Telegram, Discord, 
 
 ## Models & Pricing
 
-| Model ID                     | Shorthand          | Price              | Sizes                                                                                 | Provider             |
-| ---------------------------- | ------------------ | ------------------ | ------------------------------------------------------------------------------------- | -------------------- |
-| `google/nano-banana`         | `nano-banana`      | $0.05/image        | 1024×1024                                                                             | Google Gemini Flash  |
-| `google/nano-banana-2`       | `banana-2`         | $0.09/image        | 1024×1024                                                                             | Google Nano Banana 2 |
-| `google/nano-banana-pro`     | `banana-pro`       | $0.10–$0.15/image  | 1024×1024, 2048×2048, 4096×4096                                                       | Google Gemini Pro    |
-| `openai/gpt-image-1`         | `gpt-image`        | $0.02–$0.04/image  | 1024×1024, 1536×1024, 1024×1536                                                       | OpenAI GPT Image 1   |
-| `openai/gpt-image-2`         | `gpt-image-2`      | $0.06–$0.12/image  | 1024×1024, 1536×1024, 1024×1536                                                       | OpenAI GPT Image 2   |
-| `bytedance/seedream-5-pro`   | `seedream`         | $0.045–$0.09/image | 1024×1024, 1280×720, 2048×1024, 2048×2048, 2304×1728, 1728×2304, 2848×1600, 1600×2848 | ByteDance Seedream 5 |
-| `xai/grok-imagine-image`     | `grok-imagine`     | $0.02/image        | 1024×1024                                                                             | xAI Grok Imagine     |
-| `xai/grok-imagine-image-pro` | `grok-imagine-pro` | $0.07/image        | 1024×1024                                                                             | xAI Grok Imagine Pro |
-| `zai/cogview-4`              | `cogview`          | $0.015–$0.02/image | 512×512, 768×768, 1024×1024, 768×1344, 1344×768, 1440×1440                            | Zhipu CogView-4      |
+| Model ID                        | Shorthand          | Price              | Sizes                                                                                 | Provider                      |
+| ------------------------------- | ------------------ | ------------------ | ------------------------------------------------------------------------------------- | ----------------------------- |
+| `google/nano-banana`            | `nano-banana`      | $0.05/image        | 1024×1024                                                                             | Google Gemini Flash           |
+| `google/nano-banana-2`          | `banana-2`         | $0.09/image        | 1024×1024                                                                             | Google Nano Banana 2          |
+| `google/nano-banana-pro`        | `banana-pro`       | $0.10–$0.15/image  | 1024×1024, 2048×2048, 4096×4096                                                       | Google Gemini Pro             |
+| `openai/gpt-image-1`            | `gpt-image`        | $0.02–$0.04/image  | 1024×1024, 1536×1024, 1024×1536                                                       | OpenAI GPT Image 1            |
+| `openai/gpt-image-2`            | `gpt-image-2`      | $0.06–$0.12/image  | 1024×1024, 1536×1024, 1024×1536                                                       | OpenAI GPT Image 2            |
+| `openai/gpt-image-2.5-flare`    | `flare`            | $0.28–$0.56/image  | 1024×1024, 1536×1024, 1024×1536                                                       | OpenAI GPT Image 2.5 Flare    |
+| `openai/gpt-image-2.5-sunburst` | `sunburst`         | $0.28–$0.56/image  | 1024×1024, 1536×1024, 1024×1536                                                       | OpenAI GPT Image 2.5 Sunburst |
+| `bytedance/seedream-5-pro`      | `seedream`         | $0.045–$0.09/image | 1024×1024, 1280×720, 2048×1024, 2048×2048, 2304×1728, 1728×2304, 2848×1600, 1600×2848 | ByteDance Seedream 5          |
+| `xai/grok-imagine-image`        | `grok-imagine`     | $0.02/image        | 1024×1024                                                                             | xAI Grok Imagine              |
+| `xai/grok-imagine-image-2.0`    | `grok-imagine-2`   | $0.04/image        | 1024×1024                                                                             | xAI Grok Imagine 2.0          |
+| `xai/grok-imagine-image-pro`    | `grok-imagine-pro` | $0.07/image        | 1024×1024                                                                             | xAI Grok Imagine Pro          |
+| `zai/cogview-4`                 | `cogview`          | $0.015–$0.02/image | 512×512, 768×768, 1024×1024, 768×1344, 1344×768, 1440×1440                            | Zhipu CogView-4               |
 
 Default model: `google/nano-banana`.
 
@@ -102,13 +105,13 @@ Edit an existing image using AI. Route via ClawRouter proxy (`http://localhost:8
 
 **Request body:**
 
-| Field    | Type     | Required | Description                                                 |
-| -------- | -------- | -------- | ----------------------------------------------------------- |
-| `model`  | `string` | No       | Model ID (default: `openai/gpt-image-1`)                    |
-| `prompt` | `string` | Yes      | Text description of the edit to apply                       |
-| `image`  | `string` | Yes      | Source image — see **Image input formats** below            |
-| `mask`   | `string` | No       | Mask image (white = area to edit) — same formats as `image` |
-| `size`   | `string` | No       | Output dimensions, e.g. `"1024x1024"` (default)             |
+| Field    | Type     | Required | Description                                                                                                                                                                  |
+| -------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `model`  | `string` | No       | Model ID (default: `openai/gpt-image-1`). Also `openai/gpt-image-2`, `openai/gpt-image-2.5-sunburst`, `google/nano-banana`, `google/nano-banana-2`, `google/nano-banana-pro` |
+| `prompt` | `string` | Yes      | Text description of the edit to apply                                                                                                                                        |
+| `image`  | `string` | Yes      | Source image — see **Image input formats** below                                                                                                                             |
+| `mask`   | `string` | No       | Mask image (white = area to edit) — same formats as `image`                                                                                                                  |
+| `size`   | `string` | No       | Output dimensions, e.g. `"1024x1024"` (default)                                                                                                                              |
 
 **Image input formats** — the `image` and `mask` fields accept any of:
 
@@ -360,27 +363,30 @@ When using ClawRouter with OpenClaw, generate and edit images directly from any 
 /img2img --image /tmp/portrait.png --size 1536x1024 add a hat
 ```
 
-| Flag      | Default       | Description                           |
-| --------- | ------------- | ------------------------------------- |
-| `--image` | _(required)_  | Local image file path (supports `~/`) |
-| `--mask`  | _(none)_      | Mask image (white = area to edit)     |
-| `--model` | `gpt-image-1` | Model to use                          |
-| `--size`  | `1024x1024`   | Output size                           |
+| Flag      | Default       | Description                                                                       |
+| --------- | ------------- | --------------------------------------------------------------------------------- |
+| `--image` | _(required)_  | Local image file path (supports `~/`)                                             |
+| `--mask`  | _(none)_      | Mask image (white = area to edit)                                                 |
+| `--model` | `gpt-image-1` | `gpt-image-1`, `gpt-image-2`, `sunburst`, `nano-banana`, `banana-2`, `banana-pro` |
+| `--size`  | `1024x1024`   | Output size                                                                       |
 
 ### Model shorthands
 
-| Shorthand                              | Full ID                      |
-| -------------------------------------- | ---------------------------- |
-| `nano-banana`, `banana`                | `google/nano-banana`         |
-| `banana-2`, `nano-banana-2`            | `google/nano-banana-2`       |
-| `banana-pro`, `nano-banana-pro`        | `google/nano-banana-pro`     |
-| `gpt-image`, `gpt-image-1`             | `openai/gpt-image-1`         |
-| `gpt-image-2`                          | `openai/gpt-image-2`         |
-| `seedream`                             | `bytedance/seedream-5-pro`   |
-| `grok-imagine`                         | `xai/grok-imagine-image`     |
-| `grok-imagine-pro`                     | `xai/grok-imagine-image-pro` |
-| `cogview`                              | `zai/cogview-4`              |
-| `dall-e-3`, `dalle3`, `dalle` (legacy) | `openai/gpt-image-2`         |
+| Shorthand                              | Full ID                         |
+| -------------------------------------- | ------------------------------- |
+| `nano-banana`, `banana`                | `google/nano-banana`            |
+| `banana-2`, `nano-banana-2`            | `google/nano-banana-2`          |
+| `banana-pro`, `nano-banana-pro`        | `google/nano-banana-pro`        |
+| `gpt-image`, `gpt-image-1`             | `openai/gpt-image-1`            |
+| `gpt-image-2`                          | `openai/gpt-image-2`            |
+| `flare`, `gpt-image-2.5-flare`         | `openai/gpt-image-2.5-flare`    |
+| `sunburst`, `gpt-image-2.5-sunburst`   | `openai/gpt-image-2.5-sunburst` |
+| `seedream`                             | `bytedance/seedream-5-pro`      |
+| `grok-imagine`                         | `xai/grok-imagine-image`        |
+| `grok-imagine-2`, `grok-imagine-2.0`   | `xai/grok-imagine-image-2.0`    |
+| `grok-imagine-pro`                     | `xai/grok-imagine-image-pro`    |
+| `cogview`                              | `zai/cogview-4`                 |
+| `dall-e-3`, `dalle3`, `dalle` (legacy) | `openai/gpt-image-2`            |
 
 ---
 
@@ -390,4 +396,4 @@ When using ClawRouter with OpenClaw, generate and edit images directly from any 
 - **Payment** — Each image costs the listed price in USDC, deducted from your wallet via x402. Make sure your wallet is funded before generating or editing.
 - **Content policy** — OpenAI image models (GPT Image 1/2) apply OpenAI's content policy. Use `nano-banana` or `grok-imagine` for more flexibility with generation.
 - **Size limits** — The gateway validates `size` per model before payment; a size outside the model's list returns an error and costs nothing. Check the table above before setting `--size`.
-- **Image editing** — The `/v1/images/image2image` endpoint currently supports `openai/gpt-image-1` (default). The `image` and `mask` fields accept local file paths (`~/photo.png`, `/abs/path.png`), HTTP/HTTPS URLs, or base64 data URIs. ClawRouter handles file reading and URL downloading automatically. Supported formats: PNG, JPG/JPEG, WebP.
+- **Image editing** — The `/v1/images/image2image` endpoint supports `openai/gpt-image-1` (default), `openai/gpt-image-2`, `openai/gpt-image-2.5-sunburst` and the three `google/nano-banana*` models. `mask` is OpenAI-only (Nano Banana edits by prompt); `openai/gpt-image-2.5-flare` is generation-only. The `image` and `mask` fields accept local file paths (`~/photo.png`, `/abs/path.png`), HTTP/HTTPS URLs, or base64 data URIs. ClawRouter handles file reading and URL downloading automatically. Supported formats: PNG, JPG/JPEG, WebP.
