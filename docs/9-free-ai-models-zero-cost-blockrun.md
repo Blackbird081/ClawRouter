@@ -25,12 +25,11 @@ BlockRun's answer: just take them.
 
 ## The Lineup: <!-- br:models.free -->6<!-- /br:models.free --> Models, $0.00
 
-Through [ClawRouter](https://github.com/BlockRunAI/ClawRouter) — BlockRun's local AI routing proxy — you get zero-cost access to the following (verified live 2026-08-30):
+Through [ClawRouter](https://github.com/BlockRunAI/ClawRouter) — BlockRun's local AI routing proxy — you get zero-cost access to the following (checked against the live catalog 2026-09-29):
 
 | Model                        | Context | Reasoning | Best For                                   |
 | ---------------------------- | ------- | --------- | ------------------------------------------ |
 | **Nemotron 3.5 Lightning**   | 1M      | ✅        | The free default — thinking-mode reasoning |
-| **Nemotron 3 Nano 30B**      | 131K    | ✅        | Fastest free model (~121 tok/s)            |
 | **Nemotron 3 Ultra 550B**    | 1M      | ✅        | Largest free model — 550B / 55B active MoE |
 | **Nemotron 3 Nano Omni 30B** | 256K    | ✅        | Strong generalist (text only in practice)  |
 | **Llama 3.2 11B Vision**     | 128K    | —         | Meta Llama (text only in practice)         |
@@ -98,12 +97,6 @@ Assume 100 requests per day, distributed roughly as:
 A 30B-A3B mixture-of-experts model with a **1M-token context** and thinking-mode reasoning. It is what `/model free` pins and what ECO's SIMPLE tier opens on. Roughly 35 tokens/second, and a 1M window is unusual at any price, let alone $0.
 
 **Best for:** Long-context reasoning, multi-step planning, anything where the input is big. If you remember one free model name, remember this one.
-
-### Nemotron 3 Nano 30B — The Fast One
-
-The **fastest free model in the catalog** — around 121 tokens/second on realistic workloads, not just short pings. Returns reasoning content. When you are iterating rapidly and each round-trip is a tax on your attention, this is the one to pin.
-
-**Best for:** Rapid iteration, prompt engineering, high-volume light tasks.
 
 ### Nemotron 3 Ultra 550B — The Big One
 
@@ -176,7 +169,6 @@ If you're using Claude Code, one command switches you to any free model:
 
 ```
 /model free              → Nemotron 3.5 Lightning (1M ctx, the default)
-/model nano-30b          → Nemotron 3 Nano 30B (fastest)
 /model ultra-550b        → Nemotron 3 Ultra 550B (largest)
 /model vision-free       → Nemotron 3 Nano Omni (text only, see below)
 /model llama-vision      → Llama 3.2 11B Vision (text only, see below)
@@ -198,17 +190,17 @@ The gateway will return structured tool calls from these models, but ClawRouter 
 
 ### 2. Reasoning Has a Ceiling
 
-Five of the seven are reasoning-capable and handle most tasks well. On the hardest problems — competition-level math, formal proofs, deep multi-step planning — they don't match Claude Opus 5 or Sonnet 5. That's why ClawRouter's REASONING tier doesn't use free models.
+Four of the six are reasoning-capable and handle most tasks well. On the hardest problems — competition-level math, formal proofs, deep multi-step planning — they don't match Claude Opus 5 or Sonnet 5. That's why ClawRouter's REASONING tier doesn't use free models.
 
 ### 3. There Is No Working Free Vision
 
-Two of the seven are catalogued as vision-capable, and neither survives a real probe. On a 64×64 solid-red PNG, `nemotron-3-nano-omni` answered correctly 1 time in 4 on Base and returned "white" on Solana — where the response's own `model` field revealed a silent fallback to a text model. `llama-3.2-11b-vision` replied "I'm unable to see the image" on 3 of 3 attempts while answering plain text fine. Every one of those failures is an **HTTP 200**: the image is dropped and a confident wrong answer comes back with no error to branch on.
+Two of the six are catalogued as vision-capable, and neither survives a real probe. On a 64×64 solid-red PNG, `nemotron-3-nano-omni` answered correctly 1 time in 4 on Base and returned "white" on Solana — where the response's own `model` field revealed a silent fallback to a text model. `llama-3.2-11b-vision` replied "I'm unable to see the image" on 3 of 3 attempts while answering plain text fine. Every one of those failures is an **HTTP 200**: the image is dropped and a confident wrong answer comes back with no error to branch on.
 
 ClawRouter therefore ships no `vision` flag on any free model, so requests carrying an image route to a paid vision model instead. The general lesson is worth more than the specific finding: **a catalog's capability list is a claim, not a measurement** — and one passing sample is not a measurement either. The first probe here returned the right colour; it took four to see that was luck.
 
 ### 4. Free Hosting Is Volatile
 
-This is the real limitation, and it is worth more than the other two. On 2026-08-30 NVIDIA retired four of the five visible free models in one sweep, and none of the nine models this article originally listed is still in the tier. Free capacity comes from whatever a provider is willing to give away this quarter. Pin a free model if you like — but build so that losing it costs you a config line, not a rewrite. That is the entire argument for putting a router in front of them.
+This is the real limitation, and it is worth more than the other two. On 2026-08-30 NVIDIA retired four of the five visible free models in one sweep, and none of the nine models this article originally listed is still in the tier. Nine days after the replacements were listed, NVIDIA deprovisioned one of them — `nemotron-3-nano-30b`, the fastest in the tier — and it was delisted on 2026-09-08. Free capacity comes from whatever a provider is willing to give away this quarter. Pin a free model if you like — but build so that losing it costs you a config line, not a rewrite. That is the entire argument for putting a router in front of them.
 
 ---
 
@@ -219,7 +211,7 @@ This is the real limitation, and it is worth more than the other two. On 2026-08
 Don't use one model for everything. Route by task type:
 
 ```
-Quick chat, formatting    → Nemotron 3 Nano 30B (fastest)
+Quick chat, formatting    → Nemotron 3 Nano Omni 30B
 Code generation           → North Mini Code or Laguna XS 2.1
 Reasoning required        → Nemotron 3.5 Lightning (1M ctx)
 Hardest free reasoning    → Nemotron 3 Ultra 550B

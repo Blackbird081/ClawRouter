@@ -21,6 +21,7 @@
 import { describe, it, expect } from "vitest";
 import { DEFAULT_ROUTING_CONFIG } from "@blockrun/router-core";
 import topModels from "../top-models.json" with { type: "json" };
+import { MODEL_ALIASES } from "../models.js";
 
 /**
  * The free tier spans two namespaces: the picker lists `free/*` ids while the
@@ -103,5 +104,17 @@ describe("router free-model liveness", () => {
     // Named regression: this is the exact id that came back through a stale build.
     const seedOss = freeModelReferences().filter(([, m]) => m.includes("seed-oss"));
     expect(seedOss).toEqual([]);
+  });
+
+  it("specifically excludes nemotron-3-nano-30b, delisted 2026-09-08", () => {
+    // Deprovisioned at NVIDIA for blockrun's account (a per-account 404) and
+    // redirected by the gateway to nano-omni. It sat in ecoTiers.SIMPLE, the
+    // picker, the FREE_MODELS cascade and five aliases for three weeks after.
+    const nano = freeModelReferences().filter(([, m]) => m.endsWith("/nemotron-3-nano-30b"));
+    expect(nano).toEqual([]);
+    const aliased = Object.entries(MODEL_ALIASES).filter(
+      ([, target]) => target === "free/nemotron-3-nano-30b",
+    );
+    expect(aliased).toEqual([]);
   });
 });
