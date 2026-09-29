@@ -38,8 +38,8 @@ const MAX_BUNDLE_BYTES = 12 * 1024 * 1024;
  * The @solana/* packages that must never appear twice in a bundle.
  *
  * Not a size concern — the stateless ones (errors, codecs-*, addresses) duplicate
- * harmlessly, and a kit 8 tree duplicates them ~20x with no ill effect. These three
- * are different: `transaction-messages` keys its address map off a module-private
+ * without breaking anything (see the size check below for why they still must not).
+ * These three are different: `transaction-messages` keys its address map off a module-private
  * `Symbol("AddressMapTypeProperty")`, and `signers`/`transactions` hold the state a
  * signature is assembled from. Two copies read each other's objects as foreign and
  * produce malformed signatures — which is what shipped on 2026-03-06 when
@@ -63,18 +63,18 @@ const SINGLE_COPY_SOLANA_PACKAGES = [
  * and then counting distinct install paths, not lines.
  */
 function countSolanaCopies(source) {
-  const paths = new Map(SINGLE_COPY_SOLANA_PACKAGES.map((pkg) => [pkg, new Set()]));
+  const paths = new Map();
   for (const line of source.split("\n")) {
     if (!line.startsWith("// node_modules/")) continue;
     const marker = line.slice("// ".length).trim();
     const owner = marker.slice(marker.lastIndexOf("node_modules/") + "node_modules/".length);
-    for (const pkg of SINGLE_COPY_SOLANA_PACKAGES) {
-      if (!owner.startsWith(`${pkg}/`)) continue;
-      // The install path is everything up to and including the package name, so two
-      // different nestings of the same package count as two copies and its several
-      // dist entries count as one.
-      paths.get(pkg).add(marker.slice(0, marker.length - (owner.length - pkg.length)));
-    }
+    const pkg = owner.match(/^@solana\/[^/]+/)?.[0];
+    if (!pkg) continue;
+    // The install path is everything up to and including the package name, so two
+    // different nestings of the same package count as two copies and its several
+    // dist entries count as one.
+    if (!paths.has(pkg)) paths.set(pkg, new Set());
+    paths.get(pkg).add(marker.slice(0, marker.length - (owner.length - pkg.length)));
   }
   return [...paths].map(([pkg, seen]) => [pkg, seen.size]);
 }
@@ -123,8 +123,25 @@ for (const entry of ["index.js", "cli.js", "router/index.js"]) {
         `${MAX_BUNDLE_BYTES / 1024 / 1024}MB ceiling — likely a dependency inlined twice.`,
     );
   }
-  for (const [pkg, count] of countSolanaCopies(source)) {
-    if (count > 1) {
+  const copies = countSolanaCopies(source);
+  // Harmless to signing, not to size: npm nests a private copy of every stateless
+  // @solana/* package under each dependent when an `overrides` entry touches the
+  // tree, and at kit 8 that was 20 copies of errors and +2.1MB (8.0→10.1MB) —
+  // under MAX_BUNDLE_BYTES, so nothing else here would have noticed.
+  const nested = copies.filter(([pkg, n]) => n > 1 && !SINGLE_COPY_SOLANA_PACKAGES.includes(pkg));
+  if (nested.length > 0) {
+    failures.push(
+      `dist/${entry} bundles duplicate @solana packages (` +
+        nested.map(([pkg, n]) => `${pkg} ×${n}`).join(", ") +
+        `) — npm nested them instead of hoisting one shared copy. Delete every ` +
+        `node_modules/@solana/* and node_modules/@solana-program/* entry from ` +
+        `package-lock.json, re-resolve with \`npx npm@11 install\` (npm 10 keeps the ` +
+        `nesting, or crashes on a fresh resolve), and confirm only @solana packages ` +
+        `moved in the lock diff.`,
+    );
+  }
+  for (const [pkg, count] of copies) {
+    if (count > 1 && SINGLE_COPY_SOLANA_PACKAGES.includes(pkg)) {
       failures.push(
         `dist/${entry} bundles ${count} copies of ${pkg}. That package carries module ` +
           `identity — a module-private Symbol, or the signer/transaction state a ` +
