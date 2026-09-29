@@ -1313,7 +1313,7 @@ declare const blockrunProvider: ProviderPlugin;
 /**
  * BlockRun Model Definitions for OpenClaw
  *
- * Maps BlockRun's 55+ AI models to OpenClaw's ModelDefinitionConfig format.
+ * Maps BlockRun's model catalog to OpenClaw's ModelDefinitionConfig format.
  * All models use the "openai-completions" API since BlockRun is OpenAI-compatible.
  *
  * Pricing is in USD per 1M tokens. Operators pay these rates via x402;
@@ -1768,7 +1768,7 @@ declare function buildPartnerTools(proxyBaseUrl: string): PartnerToolDefinition[
 /**
  * @blockrun/clawrouter
  *
- * Smart LLM router for OpenClaw — 55+ models, x402 micropayments, 78% cost savings.
+ * Smart LLM router for OpenClaw — 82 models, x402 micropayments, 84% cost savings.
  * Routes each request to the cheapest model that can handle it.
  *
  * Usage:

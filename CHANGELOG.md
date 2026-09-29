@@ -4,6 +4,67 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.280 — September 29, 2026
+
+### Solana signing runs on `@solana/kit` 8.4 — for +2.3% bundle, not +26%
+
+`@solana/kit` 5.5.1 → 8.4.0, and `@x402/svm`'s program clients are forced
+onto the kit-8 line (`@solana-program/token` / `token-2022` 0.16.1,
+`compute-budget` 0.18.1) because `@x402/svm` itself still pins the kit-5
+ones (x402-foundation/x402#3391). This takes the upstream `content-length`
+fix ([#358](https://github.com/BlockRunAI/ClawRouter/pull/358), closes
+[#378](https://github.com/BlockRunAI/ClawRouter/issues/378)).
+
+The bump had been on hold because it grew `dist/cli.js` from 8.0 to 10.1 MB.
+That was never kit 8's cost. All 24 copies of `@solana/errors` in the tree
+were the same version: npm 10 nested a private copy under every dependent
+once `overrides` touched the tree, kept that placement on every later
+install, and crashed on a fresh resolve. Re-resolving only the Solana lock
+entries with npm 11 hoists one shared copy; CI's npm 10 `npm ci` reproduces
+it. `dist/cli.js` is now 8,585,853 bytes (+2.3%) with one copy of every
+`@solana/*` package. Nothing else in the lock moves — `@x402/svm` stays 2.21.0.
+
+- **Signing is byte-identical.** `@x402/svm`'s real `ExactSvmScheme` and
+  `ExactSvmSchemeV1`, driven with a fixed key, stubbed RPC and a fixed memo
+  nonce, produce the same signer and the same signed wire transaction under
+  kit 5 and kit 8 — v1 and v2, classic Token and Token-2022, seller memo and
+  nonce memo.
+- **`smoke-dist` now fails on any duplicated `@solana/*` package**, not only
+  the three that carry signing state. The nested tree built to 10.66 MB,
+  under the 12 MB ceiling, so nothing caught it before.
+
+### Free lineup: `nemotron-3-nano-30b` is gone
+
+blockrun delisted `nvidia/nemotron-3-nano-30b` on 2026-09-08 and redirects
+it to nano-omni. It stayed in `FREE_MODELS`, so startup logged it as unserved
+and skipped it on every boot, and it was still in the picker, the eco SIMPLE
+chain and five aliases
+([#404](https://github.com/BlockRunAI/ClawRouter/pull/404)).
+
+- Removed from the free cascade and `top-models.json`; six live free models
+  remain, in the same order.
+- `nano-30b`, `nemotron-nano-30b`, `nvidia/nemotron-3-nano-30b`,
+  `nemotron-nano` and `nemotron-nano-9b` follow the gateway's redirect to
+  `free/nemotron-3-nano-omni-30b-a3b-reasoning`. The catalog entry stays,
+  marked delisted, so explicit pins still route.
+- `@blockrun/router-core` re-pinned to `e38958b`: eco SIMPLE's second rung is
+  nano-omni, marked `supportsVision: false` so image turns still skip it.
+
+### Published numbers match the catalog
+
+- Model counts resynced to the published artifact: **82 chat / 109 total**,
+  6 free ([#402](https://github.com/BlockRunAI/ClawRouter/pull/402)). The
+  package description and the skill frontmatter, which no marker can reach,
+  follow it; hand-typed "55+" / "78" counts are replaced
+  ([#403](https://github.com/BlockRunAI/ClawRouter/pull/403)).
+- Savings say **84%** everywhere — the published auto-vs-Opus-5 figure (98%
+  on eco). `src/index.ts` said 78% and `openclaw.plugin.json` said 92%;
+  `brand-numbers.test.ts` now asserts both. The Cost/Transparency Nexus
+  image is redrawn with 84%
+  ([#405](https://github.com/BlockRunAI/ClawRouter/pull/405)).
+
+---
+
 ## v0.12.279 — September 15, 2026
 
 ### Desktop — visual refresh of the control plane

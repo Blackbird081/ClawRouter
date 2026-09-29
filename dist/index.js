@@ -103,7 +103,6 @@ var init_top_models = __esm({
       "deepseek/deepseek-chat",
       "deepseek/deepseek-reasoner",
       "free/nemotron-3.5-lightning",
-      "free/nemotron-3-nano-30b",
       "free/laguna-xs-2.1",
       "free/north-mini-code",
       "free/nemotron-3-nano-omni-30b-a3b-reasoning",
@@ -559,9 +558,12 @@ var init_models = __esm({
       "step-3.7-flash": "free/step-3.7-flash",
       // nemotron-nano-9b-v2 hit 410 on 2026-08-30; the generic shorthands follow
       // blockrun's redirect to its replacement, while the 9b-naming pins above stay
-      // on the real id (the gateway resolves them).
-      "nemotron-nano-9b": "free/nemotron-3-nano-30b",
-      "nemotron-nano": "free/nemotron-3-nano-30b",
+      // on the real id (the gateway resolves them). That replacement,
+      // nemotron-3-nano-30b, was itself delisted 2026-09-08 and blockrun now sends
+      // both ids to nano-omni, so these follow it there rather than chain through a
+      // dead model.
+      "nemotron-nano-9b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "nemotron-nano": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
       // nemotron-nano-12b-v2-vl hit 410 the same day; vision in, vision out — the
       // target is blockrun's own, and nano-omni is the only vision-capable free
       // model left.
@@ -591,9 +593,11 @@ var init_models = __esm({
       maverick: "free/llama-4-maverick",
       // explicit-ish pin — gateway redirects
       // ── The 2026-08-30 free lineup (blockrun #448) ────────────────────────────
-      // nvidia/* bridges for the four NVIDIA-hosted additions.
+      // nvidia/* bridges for the four NVIDIA-hosted additions. nemotron-3-nano-30b
+      // was delisted 2026-09-08 (per-account 404 at NVIDIA); its names follow
+      // blockrun's own redirect to nano-omni, the same family and size (30B-A3B).
       "nvidia/nemotron-3.5-lightning": "free/nemotron-3.5-lightning",
-      "nvidia/nemotron-3-nano-30b": "free/nemotron-3-nano-30b",
+      "nvidia/nemotron-3-nano-30b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
       "nvidia/nemotron-3-ultra-550b": "free/nemotron-3-ultra-550b",
       "nvidia/llama-3.2-11b-vision": "free/llama-3.2-11b-vision",
       // The two non-NVIDIA free models keep the `free/` picker convention; their
@@ -605,8 +609,9 @@ var init_models = __esm({
       lightning: "free/nemotron-3.5-lightning",
       "nemotron-lightning": "free/nemotron-3.5-lightning",
       "nemotron-3.5-lightning": "free/nemotron-3.5-lightning",
-      "nano-30b": "free/nemotron-3-nano-30b",
-      "nemotron-nano-30b": "free/nemotron-3-nano-30b",
+      "nano-30b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
+      // delisted 2026-09-08 — see above
+      "nemotron-nano-30b": "free/nemotron-3-nano-omni-30b-a3b-reasoning",
       "ultra-550b": "free/nemotron-3-ultra-550b",
       "nemotron-ultra-550b": "free/nemotron-3-ultra-550b",
       "llama-vision": "free/llama-3.2-11b-vision",
@@ -1996,8 +2001,9 @@ var init_models = __esm({
       },
       {
         // NVIDIA Nemotron Nano 9B v2: fast lightweight generalist, 131K context.
-        // EOL'd 2026-08-30 (410 Gone, same sweep). Gateway redirects it to
-        // nemotron-3-nano-30b. Entry kept for pins; off the picker and the cascade.
+        // EOL'd 2026-08-30 (410 Gone, same sweep). Gateway redirected it to
+        // nemotron-3-nano-30b until that was delisted too (2026-09-08); both now go
+        // to nano-omni. Entry kept for pins; off the picker and the cascade.
         id: "free/nemotron-nano-9b-v2",
         name: "[Free] Nemotron Nano 9B v2",
         version: "nano-9b-v2",
@@ -2057,9 +2063,12 @@ var init_models = __esm({
         reasoning: true
       },
       {
-        // Nemotron 3 Nano 30B-A3B — the fastest free model in the catalog
-        // (~121 tok/s on a realistic workload, not a 16-token ping). Returns
-        // reasoning_content. Also the tertiary rung of blockrun's own free cascade.
+        // Nemotron 3 Nano 30B-A3B — was the fastest free model in the catalog
+        // (~121 tok/s). DELISTED 2026-09-08: NVIDIA deprovisioned it for blockrun's
+        // account (a structured per-account 404, nine days after listing), and the
+        // gateway now redirects it to nano-omni. Entry kept so explicit pins stay
+        // routable; off the picker and the FREE_MODELS cascade, and every alias
+        // that named it follows the gateway's redirect.
         id: "free/nemotron-3-nano-30b",
         name: "[Free] Nemotron 3 Nano 30B",
         version: "3-nano-30b",
@@ -37521,18 +37530,12 @@ ${value.slice(-(scanLimit - prefixLength))}`;
         supportsTools: false,
         supportsVision: true
       },
-      "nvidia/nemotron-3-nano-30b": {
-        // supportsTools: not probed — fails closed
-        contextWindow: 131072,
-        maxOutputTokens: 16384,
-        supportsTools: false,
-        supportsVision: false
-      },
       "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+        // override: The catalog tags this model "vision", but a correctly sized probe does not hold up (ClawRouter, 2026-08-31): a 64x64 solid-red PNG was named correctly 1 of 4 times on Base, and on Solana the image was silently dropped and a text model answered "white". An HTTP 200 with a confident wrong answer gives the caller nothing to branch on, so image turns must not be routed here. It is ecoTiers.SIMPLE.fallback[0] since nemotron-3-nano-30b was delisted (2026-09-08); remove once a probe of this size comes back right on both chains.
         contextWindow: 256e3,
         maxOutputTokens: 16384,
         supportsTools: false,
-        supportsVision: true
+        supportsVision: false
       },
       "nvidia/nemotron-3-ultra-550b": {
         // supportsTools: not probed — fails closed
@@ -39723,8 +39726,13 @@ ${value.slice(-(scanLimit - prefixLength))}`;
           primary: "nvidia/nemotron-3.5-lightning",
           // FREE — NVIDIA free tier flagship, 1M ctx
           fallback: [
-            "nvidia/nemotron-3-nano-30b",
-            // FREE — fastest free model (~121 tok/s)
+            // Was nvidia/nemotron-3-nano-30b until blockrun delisted it on 2026-09-08
+            // (NVIDIA deprovisioned it for the account — a structured per-account
+            // 404). nano-omni is blockrun's own redirect target for that id, so this
+            // follows the same rule as the head: the router and the gateway name the
+            // same model.
+            "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+            // FREE — nano-30b's successor, 256K ctx
             // The free head keeps rotting with NVIDIA's hosting (deepseek-v4-flash
             // 410 2026-08-12, seed-oss-36b 410 2026-08-03, gpt-oss-120b/20b 400
             // 2026-08-21, and on 2026-08-30 FOUR of the five visible free models at
@@ -99514,8 +99522,6 @@ var init_proxy = __esm({
     FREE_MODELS = /* @__PURE__ */ new Set([
       "free/nemotron-3.5-lightning",
       // free-tier default — 1M ctx, thinking mode
-      "free/nemotron-3-nano-30b",
-      // fastest free model (~121 tok/s)
       "free/laguna-xs-2.1",
       // coding, ~161 tok/s — on our NVIDIA key
       "free/north-mini-code",
@@ -233613,7 +233619,7 @@ var init_index = __esm({
       // product, different id. See #305.
       id: BLOCKRUN_PLUGIN_ID,
       name: "BlockRun ClawRouter",
-      description: "Smart LLM router \u2014 55+ models, x402 micropayments, 78% cost savings",
+      description: "Smart LLM router \u2014 82 models, x402 micropayments, 84% cost savings",
       version: VERSION,
       register(api) {
         const isDisabled = process["env"].CLAWROUTER_DISABLED === "true" || process["env"].CLAWROUTER_DISABLED === "1";
@@ -233668,7 +233674,9 @@ var init_index = __esm({
         const shouldLogRegistration = !proc.__clawrouterRegistrationLogged;
         proc.__clawrouterRegistrationLogged = true;
         if (shouldLogRegistration) {
-          api.logger.info("BlockRun provider registered (55+ models via x402)");
+          api.logger.info(
+            `BlockRun provider registered (${VISIBLE_OPENCLAW_MODELS.length} models via x402)`
+          );
           if (typeof api.registerWebSearchProvider === "function") {
             if (webSearchDisabled) {
               api.logger.info(
