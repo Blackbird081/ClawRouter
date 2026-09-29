@@ -1,7 +1,7 @@
 {
   "name": "@blockrun/clawrouter",
-  "version": "0.12.276",
-  "description": "Smart LLM router — save 84% on inference costs. 76 models (7 free). Pay by credit card (API key) or USDC (x402 wallet).",
+  "version": "0.12.279",
+  "description": "Smart LLM router — save 84% on inference costs. 82 models (6 free). Pay by credit card (API key) or USDC (x402 wallet).",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -95,7 +95,7 @@
     "@polymarket/clob-client-v2": "1.0.8",
     "@scure/bip32": "^2.0.1",
     "@scure/bip39": "^1.5.0",
-    "@solana/kit": "^8.0.0",
+    "@solana/kit": "^8.4.0",
     "@x402/core": "^2.9.0",
     "@x402/evm": "^2.9.0",
     "@x402/fetch": "^2.9.0",
@@ -129,20 +129,15 @@
   "overrides": {
     "axios": "$axios",
     "undici": "$undici",
-    "basic-ftp": "^5.3.1",
     "ws": "^8.21.2",
     "postcss": "^8.5.25",
     "esbuild": "^0.28.1",
     "brace-expansion": "^5.0.9",
     "fast-uri": "^3.1.5",
     "tar": "^7.5.22",
-    "hono": "^4.13.0",
+    "hono": "^4.13.5",
     "@hono/node-server": "^2.1.0",
     "ip-address": "^10.4.0",
-    "jayson": {
-      "uuid": "^11.1.1"
-    },
-    "@solana/kit": "^8.0.0",
     "@solana-program/compute-budget": "^0.18.1",
     "@solana-program/token": "^0.16.1",
     "@solana-program/token-2022": "^0.16.1"

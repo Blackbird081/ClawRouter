@@ -38,7 +38,6 @@ const demoAgents: AgentStatus[] = [
     proxyReachable: true,
     health: "ready",
     activation: "restart-gateway",
-    restartRequired: false,
     removalMode: "disconnect",
     details: [],
   },
@@ -51,7 +50,6 @@ const demoAgents: AgentStatus[] = [
     proxyReachable: true,
     health: "ready",
     activation: "restart-agent",
-    restartRequired: true,
     removalMode: "restore",
     details: ["Restart Codex Desktop after changing the active provider."],
   },
@@ -63,8 +61,7 @@ const demoAgents: AgentStatus[] = [
     configured: false,
     proxyReachable: true,
     health: "needs-attention",
-    activation: "restart-agent",
-    restartRequired: false,
+    activation: "immediate",
     removalMode: "disconnect",
     details: [],
   },
@@ -77,7 +74,6 @@ const demoAgents: AgentStatus[] = [
     proxyReachable: true,
     health: "not-installed",
     activation: "immediate",
-    restartRequired: false,
     removalMode: "unavailable",
     details: ["DSH settings are hot-reloaded.", "DSH is currently a developer preview."],
   },
@@ -90,11 +86,34 @@ const demoAgents: AgentStatus[] = [
     proxyReachable: true,
     health: "needs-attention",
     activation: "immediate",
-    restartRequired: false,
     removalMode: "unavailable",
     details: [],
   },
 ];
+
+/**
+ * Demo daily breakdown, anchored to today so the browser fallback always shows a
+ * current-looking week. Shape matches the router's /stats dailyBreakdown.
+ */
+const demoDailyBreakdown = [42, 68, 53, 82, 64, 91, 74].map((requests, index) => {
+  const day = new Date();
+  day.setDate(day.getDate() - (6 - index));
+  return {
+    // UTC day, matching how the router keys its daily logs.
+    date: day.toISOString().slice(0, 10),
+    totalRequests: requests,
+    totalCost: Number((requests * 0.0134).toFixed(4)),
+  };
+});
+
+// The Usage page shows these totals beside the daily chart, so derive them from
+// the same series instead of typing numbers that can drift apart. The demo
+// router saves roughly 84.7% against an all-frontier baseline.
+const round2 = (value: number) => Number(value.toFixed(2));
+const demoRequests = demoDailyBreakdown.reduce((sum, day) => sum + day.totalRequests, 0);
+const demoCost = round2(demoDailyBreakdown.reduce((sum, day) => sum + day.totalCost, 0));
+const demoBaselineCost = round2(demoCost / (1 - 0.847));
+const demoSavings = round2(demoBaselineCost - demoCost);
 
 const demoDashboard: DashboardData = {
   proxy: {
@@ -108,7 +127,22 @@ const demoDashboard: DashboardData = {
     balance: 18.42,
     balances: { base: 18.42, solana: 7.08 },
   },
-  stats: { requests: 284, totalCost: 3.82, savings: 21.14, inputTokens: 812400 },
+  stats: {
+    requests: demoRequests,
+    totalCost: demoCost,
+    totalBaselineCost: demoBaselineCost,
+    totalSavings: demoSavings,
+    savingsPercentage: Number(((demoSavings / demoBaselineCost) * 100).toFixed(1)),
+    dailyBreakdown: demoDailyBreakdown,
+    // Counts and costs add up to demoRequests (474) and demoCost (6.35).
+    byModel: {
+      "anthropic/claude-sonnet-4.6": { count: 160, cost: 3.22 },
+      "openai/gpt-5.4": { count: 102, cost: 1.86 },
+      "google/gemini-3.1-pro": { count: 73, cost: 0.85 },
+      "deepseek/deepseek-v4-pro": { count: 87, cost: 0.42 },
+      "free/gpt-oss-120b": { count: 52, cost: 0 },
+    },
+  },
   models: [
     {
       id: "auto",

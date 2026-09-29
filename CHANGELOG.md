@@ -4,6 +4,188 @@ All notable changes to ClawRouter.
 
 ---
 
+## v0.12.279 — September 15, 2026
+
+### Desktop — visual refresh of the control plane
+
+The sidebar is grouped into Control / Account with the wallet card anchored
+to the bottom of the rail; the hero is data-driven (connected agents, model
+count, settlement chain); the model catalog carries tinted capability chips
+(Reasoning / Vision / Agentic / Tools); Usage renders a live daily chart from
+the router's `/stats` with axis, gridlines and per-day tooltips; Settings
+gains a theme picker and copyable local endpoints; Wallet shows the official
+Base and Solana marks with copyable addresses; the funding dialog has Buy /
+Deposit tabs, and Deposit exposes both wallet addresses.
+
+Three numbers on the refreshed screens were corrected before landing
+([#367](https://github.com/BlockRunAI/ClawRouter/pull/367)):
+
+- **The hero counted alias rows as models.** `/v1/models` deliberately emits
+  a row per shorthand, so the hero and routing map advertised the raw length
+  while the Models page next to them collapsed the same array. Both now count
+  the collapsed catalog.
+- **A window with no recent traffic drew a week that never happened.** When
+  every day the router reported was older than the chart cap, the padding
+  snapped to today and rendered seven zero bars labelled "last 7 days" beside
+  a Requests card showing the full total. There is no window to draw there,
+  so the chart shows its empty state instead.
+- **The Requests card and the bars counted different days.** `totalRequests`
+  spans the 7 most recent log _files_, which for an intermittent user reach
+  back further than the chart. The card now sums the same days the bars do
+  and carries the chart's own window label. The window math moved out of
+  `App.tsx` into `usage-stats.ts` with tests.
+
+The Desktop 0.1.3 preview already shipped this refresh from an integration
+branch; this entry records it landing on `main`.
+
+### Desktop — chain switches apply without a restart; Hermes needs none
+
+Switching the payment chain wrote `~/.blockrun/.chain` and then asked the
+user to "restart the gateway", but the proxy that needed restarting is the
+child process Desktop itself launched, which the user cannot restart short of
+quitting the app. Desktop now restarts the proxy it owns after the CLI
+succeeds, stops any listener the child left behind (a wrapper's grandchild on
+8402 would otherwise be re-adopted as a stale proxy), waits for the port to
+close, and confirms through `/health` that the new proxy signs on the
+requested chain before reporting it active. A proxy Desktop did not launch is
+left alone. The Hermes adapter no longer demands a restart after every
+change: Hermes re-reads `config.yaml` on mtime change and looks its provider
+key up at call time
+([#371](https://github.com/BlockRunAI/ClawRouter/pull/371)).
+
+`AgentStatus.restartRequired` was deleted: five adapters wrote it and nothing
+read it, and it could not be read honestly, since nothing observes whether an
+agent process has picked a config change up. Reading it as a state would have
+pinned Codex and OpenClaw to a permanent "Restart pending"
+([#379](https://github.com/BlockRunAI/ClawRouter/pull/379), closes #377).
+
+### Fixed — the Desktop staged runtime was still shipping axios 0.27.2
+
+v0.12.238 pinned axios forward at the root, but the Desktop staged runtime is
+a separate pnpm install with its own overrides, so
+`@polymarket/builder-relayer-client` kept dragging axios 0.27.2 into the tree
+electron-builder packages — 26 of the repo's 35 open Dependabot alerts. The
+root pin is mirrored into `runtime/pnpm-workspace.yaml`; the relock drops
+0.27.2 and its transitives and touches nothing else
+([#376](https://github.com/BlockRunAI/ClawRouter/pull/376)).
+
+### Dependencies — hono patched; two overrides that pinned nothing removed
+
+All 13 root `overrides` were audited against what the lockfile resolves.
+`hono` was pinned `^4.13.0` and resolving to 4.13.1, inside the advisory
+range for the `toSSG()` write and query-parser issues; it is now `^4.13.5`
+(resolves 4.13.7). `basic-ftp` and `jayson > uuid` matched no package in the
+tree at all — leftovers from removed dependencies that read as protection —
+and are gone. The other nine resolve to exactly one copy each
+([#380](https://github.com/BlockRunAI/ClawRouter/pull/380)).
+
+### Build — `smoke-dist` guards the single-copy Solana signer invariant
+
+The 2026-03-06 malformed-transaction incident was recorded as "pin
+`@solana/kit` to `^5.0.0`", and nothing enforced it. The property that
+actually broke was two runtime copies of `@solana/signers` and
+`@solana/transactions` disagreeing about the state a signature is assembled
+from. `scripts/smoke-dist.mjs` now asserts that `@solana/signers`,
+`@solana/transactions` and `@solana/transaction-messages` are each inlined
+exactly once (counted by install path, not marker line), and runs a
+synthetic two-copy fixture through itself first so a matcher that rots
+fails the build instead of reporting a clean bundle
+([#375](https://github.com/BlockRunAI/ClawRouter/pull/375)).
+
+### Brand numbers — catalog markers refreshed; sync script hardened
+
+`brand-numbers.json` is resynced to the published catalog: 78 chat models
+(6 free), 12 image models, 105 visible in total. The `package.json`
+description, README badge and SKILL frontmatter literals that markers cannot
+reach were moved by hand to match. `scripts/sync-brand-numbers.mjs` is
+vendored verbatim from blockrun-mcp with `assertRenderable` / `escAttr`, so
+a value fetched from the mirror is refused, and attribute-escaped, before
+the unattended brand-sync bot writes it into markdown
+([#359](https://github.com/BlockRunAI/ClawRouter/pull/359),
+[#374](https://github.com/BlockRunAI/ClawRouter/pull/374),
+[#383](https://github.com/BlockRunAI/ClawRouter/pull/383),
+[#388](https://github.com/BlockRunAI/ClawRouter/pull/388)).
+
+Known gap carried into this release: blockrun now serves three image models
+(`openai/gpt-image-2.5-flare`, `openai/gpt-image-2.5-sunburst`,
+`xai/grok-imagine-image-2.0`) that the image picker, shorthands and
+`docs/image-generation.md` do not list yet. They are reachable by full id
+through `/v1/images/generations`; the picker sync is the next release.
+
+Thanks to [@ramioca](https://github.com/ramioca) for the Desktop control
+plane refresh (#367) and the restart-free chain switch (#371).
+
+---
+
+## v0.12.278 — September 7, 2026
+
+### Removed — TWZRD AutoGate, and the optional dependency behind it
+
+`src/twzrd-autogate.ts`, the `twzrd-x402-gate` optionalDependency, the
+`TWZRD_AUTO_GATE` / `TWZRD_GATE_ENABLED` / `TWZRD_GATE_TIMEOUT_MS` /
+`TWZRD_FAIL_OPEN` flags and their docs are gone. `clawrouter policy`
+(SpendControl) is the pre-spend control ClawRouter ships, and the x402
+pre-sign path carries no third-party vendor.
+
+The evidence for removing it came from the vendor's own follow-up
+([#360](https://github.com/BlockRunAI/ClawRouter/pull/360), closed), which
+verified `0.9.4` against the installed package rather than the docs:
+
+**The engine changed under a patch bump.** `0.9.3` ran the full
+`/v1/intel/preflight` the v0.12.277 notes described. In `0.9.4` the same
+`createTwzrdBeforePaymentHook` call became a wash-only `GET merchant_card/{payTo}`
+against a different endpoint, on Solana and Base alike, with a different refusal
+set — no code change on our side. A dependency that redefines what it does
+inside `onBeforePaymentCreation` on a patch release cannot sit there.
+
+**Our failure config was never honoured.** The package converts a fast lookup
+failure — `503`, `404`, `fetch failed`, invalid JSON, its own 3s timeout — into
+allow internally, and ignores the `failOpen` we pass. `TWZRD_FAIL_OPEN=false`
+therefore meant "refuse on hang", not "refuse on outage", for the whole life of
+the feature. The flag documented a guarantee the package would not give.
+
+**Unknown became a refusal.** `wash_flagged: false` with missing, partial or
+stale coverage aborts as `twzrd_wash_unknown`. A recipient nobody has scored
+yet stops a payment.
+
+**Every lookup was attributed.** `X-Twzrd-Caller`, `X-TWZRD-Integration`,
+`X-TWZRD-Client` and a per-process run id went out with each call, from inside
+the code path that signs with the user's wallet.
+
+`0.9.3` remains uninstalled either way: `0.10.0` / `0.10.1` are deprecated
+upstream as unreproducible, and the gate's whole surface was opt-in and
+default-off, so nothing that worked before this release stops working. Anyone
+who had `TWZRD_AUTO_GATE=1` set now falls back to SpendControl alone, which was
+always the guarantee.
+
+---
+
+## v0.12.277 — September 6, 2026
+
+### Added — opt-in TWZRD AutoGate on the x402 pre-sign hook
+
+Default **off**. `clawrouter policy` (SpendControl) stays the vendor-neutral path and is untouched by any of this. `TWZRD_AUTO_GATE=1` (or `TWZRD_GATE_ENABLED=true`) composes TWZRD's trust check onto the same `onBeforePaymentCreation` chain, after SpendControl. From [#357](https://github.com/BlockRunAI/ClawRouter/pull/357) by [@twzrd-sol](https://github.com/twzrd-sol), which closes [#355](https://github.com/BlockRunAI/ClawRouter/issues/355) and is deliberately not a re-open of the withdrawn default-on [#218](https://github.com/BlockRunAI/ClawRouter/pull/218).
+
+Review changed three things about it before it landed.
+
+**A third party must not be able to stop your payments.** The gate's preflight is a synchronous POST to `intel.twzrd.xyz` that sets no timeout of its own, and the package defaults to `failOpen: false` — so an outage there refused _every_ paid Solana call. That is precisely the shape of the v0.12.271 outage, where an unreachable third party turned every Solana payment into a bare `fetch failed` and looked exactly like a gateway fault. The gate is additional cover on top of SpendControl, so we pass `failOpen: true` and bound the answer at `TWZRD_GATE_TIMEOUT_MS` (default 2000ms). A timeout, a rejection or an outage logs why and proceeds; `TWZRD_FAIL_OPEN=false` restores refuse-on-outage for anyone who would rather stop paying than pay unscored.
+
+**It gates Solana, not Base.** The docs said EVM. `classifyNetwork` returns `network_not_scored` for `base` / `eip155:*`, and under our `unsupportedNetworkMode: "observe"` those are waved through with verdict `unknown` and no network call at all. The x402 client is shared across both chains, so registering it in the EVM branch still hooks Solana payments — `refuseWashFlagged` can only ever fire there. README and `docs/configuration.md` now say so, and say what leaves the machine when it is on: resource URL, `payTo`, price and chain, Solana only, opt-in only.
+
+**We keep our own hook registrar.** `installTwzrdAutoGate` _replaces_ `client.onBeforePaymentCreation` with its own wrapper, so every hook registered after it silently inherits a third-party kill switch — `TWZRD_AUTO_GATE=0` would skip ours too. SpendControl is safe today only because it is registered first. We now prefer `createTwzrdBeforePaymentHook` and register it ourselves, which is also what gives the timeout somewhere to live; the `installTwzrdAutoGate` path remains as a fallback and warns about both limitations.
+
+Tests went 12 → 23. The original set covered flag parsing and load time; nothing covered payment time, which is the part that can cost money or block it.
+
+### Fixed — the committed bundle was a release behind on the model catalog
+
+tsup inlines `src/top-models.json` and `src/models.ts`, so v0.12.276's src-only catalog change left the in-repo `dist/` serving the previous list. Nothing shipped wrong — `publish.yml` runs `npm ci` → build → publish, and the published 0.12.276 tarball did carry Gemini 3.8 Flash — but a `git clone` + run did not.
+
+### Fixed — Gemini Flash pricing is promotional and expires 2027-01-01
+
+Google prices the whole 3.6/3.7/3.8 Flash band at $0.75/$3.75 only **through 2026-12-31**, reverting to $1.50/$7.50. These numbers feed `calculateModelCost`, which drives the `maxCostPerRun` projection and every `cost` in the usage journal — carrying the promo rate past the reversion would under-report spend 2x and let a cap run to twice its stated limit. Both entries now carry the date and point at each other.
+
+This also settles whether `google/gemini-3.8-flash` is `3.6-flash` under a second name: it is not. blockrun live-probed it direct against Google (STOP, real text, `thoughtsTokenCount` 263, bare upstream id with no `-preview` suffix), and it accepts `thinkingConfig.thinkingBudget: 0`, which the 3.6 Flash generation rejects outright. The identical catalog metadata was a deliberately price-free shared description plus the shared promo.
+
 ## v0.12.276 — September 6, 2026
 
 ### Fixed — Gemini 3.8 Flash was routable but uncatalogued, which is a cost-cap hole
@@ -224,7 +406,7 @@ Both now forward verbatim through the existing paid-passthrough, verified live a
 
 ### Fixed — the API-key docs described a gateway that no longer exists
 
-The 404 hint and the README both said `api.blockrun.ai` "currently carries chat and text completions" and that "image, video, audio and the partner APIs are still wallet-only". Probing the live gateway on 2026-09-05 disproved it: chat, `/v1/messages`, `/v1/models`, image generation, speech, video, Surf, Exa, prediction markets and phone lookup/fraud **all work on an API key**, and so do all <!-- br:models.free -->7<!-- /br:models.free --> free models. The genuine wallet-only exceptions are the routes that bind a lease or a position to a payer address — buying/renewing/releasing phone numbers, and Polymarket trading — and those are now what the hint names.
+The 404 hint and the README both said `api.blockrun.ai` "currently carries chat and text completions" and that "image, video, audio and the partner APIs are still wallet-only". Probing the live gateway on 2026-09-05 disproved it: chat, `/v1/messages`, `/v1/models`, image generation, speech, video, Surf, Exa, prediction markets and phone lookup/fraud **all work on an API key**, and so do all <!-- br:models.free -->6<!-- /br:models.free --> free models. The genuine wallet-only exceptions are the routes that bind a lease or a position to a payer address — buying/renewing/releasing phone numbers, and Polymarket trading — and those are now what the hint names.
 
 ### Changed — Solana is the stated preference, without stranding Base wallets
 
