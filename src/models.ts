@@ -28,6 +28,11 @@ export const MODEL_ALIASES: Record<string, string> = {
   "sonnet-5": "anthropic/claude-sonnet-5",
   "sonnet-5.0": "anthropic/claude-sonnet-5",
   "sonnet-5-0": "anthropic/claude-sonnet-5",
+  // Sonnet 5.5 (2026-10) — explicit pins only. Bare `sonnet`/`claude` stay on
+  // 4.6 (routing/alias promotion is product policy, not a catalog sync).
+  "sonnet-5.5": "anthropic/claude-sonnet-5.5",
+  "sonnet-5-5": "anthropic/claude-sonnet-5.5",
+  "anthropic/claude-sonnet-5-5": "anthropic/claude-sonnet-5.5",
   // Explicit 4.5 pins (distinct model upstream, same pricing as 4.6)
   "sonnet-4.5": "anthropic/claude-sonnet-4.5",
   "sonnet-4-5": "anthropic/claude-sonnet-4.5",
@@ -40,6 +45,13 @@ export const MODEL_ALIASES: Record<string, string> = {
   fable: "anthropic/claude-fable-5",
   "fable-5": "anthropic/claude-fable-5",
   "fable-5.0": "anthropic/claude-fable-5",
+  // Fable 5.1 (2026-10) — same tier and price as Fable 5. Explicit pins only;
+  // bare `fable` stays on 5. `anthropic/claude-fable-5.1` is a catalog id and
+  // must NOT be a key (see note above); the dashed spelling the gateway also
+  // accepts is safe to alias.
+  "fable-5.1": "anthropic/claude-fable-5.1",
+  "fable-5-1": "anthropic/claude-fable-5.1",
+  "anthropic/claude-fable-5-1": "anthropic/claude-fable-5.1",
   // Opus 5 (2026-07-24) takes the bare `opus` alias: identical $5/$25 and the
   // same 1M/128K envelope as 4.8, so a wallet with a per-call cost cap sees no
   // change in how a request is priced or sized — the promotion cannot push a
@@ -53,6 +65,11 @@ export const MODEL_ALIASES: Record<string, string> = {
   "opus-5": "anthropic/claude-opus-5",
   "opus-5.0": "anthropic/claude-opus-5",
   "opus-5-0": "anthropic/claude-opus-5",
+  // Opus 5.5 (2026-10) — $4/$20, cheaper than Opus 5. Explicit pins only: bare
+  // `opus` stays on 5 until that promotion is decided on its own.
+  "opus-5.5": "anthropic/claude-opus-5.5",
+  "opus-5-5": "anthropic/claude-opus-5.5",
+  "anthropic/claude-opus-5-5": "anthropic/claude-opus-5.5",
   "opus-4": "anthropic/claude-opus-4.8",
   "opus-4.8": "anthropic/claude-opus-4.8",
   "opus-4-8": "anthropic/claude-opus-4.8",
@@ -104,6 +121,12 @@ export const MODEL_ALIASES: Record<string, string> = {
   "sol-pro": "openai/gpt-5.6-sol-pro",
   "terra-pro": "openai/gpt-5.6-terra-pro",
   "luna-pro": "openai/gpt-5.6-luna-pro",
+  // GPT-6 (2026-10): three tiers, Astra (flagship) / Sol / Luna. Explicit pins
+  // only — the generic `gpt5`/`gpt` shorthands are untouched, and there is no
+  // bare `gpt-6` (three tiers, no obvious default; same call as gpt-5.6).
+  "gpt-6-astra": "openai/gpt-6-astra",
+  "gpt-6-sol": "openai/gpt-6-sol",
+  "gpt-6-luna": "openai/gpt-6-luna",
   "gpt-5.5": "openai/gpt-5.5",
   "gpt-5.5-pro": "openai/gpt-5.5-pro",
   // ChatGPT Instant. `chat-latest` is a rolling upstream id — pinning it means
@@ -111,6 +134,7 @@ export const MODEL_ALIASES: Record<string, string> = {
   "chat-latest": "openai/chat-latest",
   chatgpt: "openai/chat-latest",
   "gpt-5.4": "openai/gpt-5.4",
+  "gpt-5.1": "openai/gpt-5.1",
   "gpt-5.4-pro": "openai/gpt-5.4-pro",
   "gpt-5.4-nano": "openai/gpt-5.4-nano",
   nano: "openai/gpt-5.4-nano",
@@ -178,7 +202,10 @@ export const MODEL_ALIASES: Record<string, string> = {
   "qwen-3.7-flash": "qwen/qwen3.7-flash",
 
   // Tencent + Xiaomi (2026-07-25) — each maker has exactly one model, so the
-  // bare maker names are safe to bind.
+  // bare maker names are safe to bind. tencent/hy3 was RETIRED 2026-09-24
+  // (hidden upstream, gateway redirects it to qwen/qwen3.7-flash); these keep
+  // naming the real id and the gateway does the redirect, same treatment as
+  // the retired free-model pins.
   hy3: "tencent/hy3",
   tencent: "tencent/hy3",
   hunyuan: "tencent/hy3",
@@ -228,6 +255,11 @@ export const MODEL_ALIASES: Record<string, string> = {
   grok: "xai/grok-4.5",
   "grok-4.5": "xai/grok-4.5",
   "grok-4-5": "xai/grok-4.5",
+  // Grok 4.6 / 4.7 (2026-10) — explicit pins. Bare `grok` stays on 4.5.
+  "grok-4.7": "xai/grok-4.7",
+  "grok-4-7": "xai/grok-4.7",
+  "grok-4.6": "xai/grok-4.6",
+  "grok-4-6": "xai/grok-4.6",
   "grok-4.3": "xai/grok-4.3",
   "grok-fast": "xai/grok-4-fast-reasoning",
   "grok-build": "xai/grok-build-0.1",
@@ -663,6 +695,55 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     vision: true,
     toolCalling: true,
   },
+  // GPT-6 Family (blockrun 2026-10, live catalog 2026-10-02). Three tiers:
+  // Astra is the flagship, Sol the cost-efficient tier below it, Luna the
+  // fast/cheap tier. All three are reasoning + vision upstream (unlike
+  // gpt-5.6-luna, Luna 6 carries the reasoning category). Base rates only:
+  // upstream re-prices the whole request at 2x in / 1.5x out above 272K prompt
+  // tokens (Astra $20/$75, Sol $4/$15, Luna $0.20/$0.75), which this registry
+  // cannot express — as with gpt-5.5-pro, that skews `logUsage` telemetry, not
+  // the charge (payment is server-dictated via 402). The gateway absorbs the
+  // request quirks: Astra rejects reasoning_effort "none", and GPT-6 rejects
+  // temperature != 1, top_p, penalties, logprobs and stop.
+  {
+    id: "openai/gpt-6-astra",
+    name: "GPT-6 Astra",
+    version: "6",
+    inputPrice: 10.0,
+    outputPrice: 50.0,
+    contextWindow: 1050000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "openai/gpt-6-sol",
+    name: "GPT-6 Sol",
+    version: "6",
+    inputPrice: 2.0,
+    outputPrice: 10.0,
+    contextWindow: 1050000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "openai/gpt-6-luna",
+    name: "GPT-6 Luna",
+    version: "6",
+    inputPrice: 0.1,
+    outputPrice: 0.5,
+    contextWindow: 1050000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
   // GPT-5.6 Family — GA 2026-07-09. Three fixed tiers (Sol/Terra/Luna) replace the
   // single-model-plus-effort-knob line (blockrun source-of-truth models.ts). Sol is
   // the deepest-reasoning flagship; Terra is the balanced everyday tier; Luna is the
@@ -850,6 +931,22 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     toolCalling: true,
   },
 
+  // GPT-5.1 — listed on the gateway 2026-10 (400K ctx, configurable reasoning
+  // effort). Older generation than 5.4/5.5; carried so a pin is priced.
+  {
+    id: "openai/gpt-5.1",
+    name: "GPT-5.1",
+    version: "5.1",
+    inputPrice: 1.25,
+    outputPrice: 10.0,
+    contextWindow: 400000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+
   // OpenAI GPT-5.3 Family
   {
     id: "openai/gpt-5.3",
@@ -1031,15 +1128,17 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     toolCalling: true,
   },
   {
-    // Newest Sonnet — near-Opus coding/agentic quality at Sonnet cost. Same
-    // price as 4.6 ($3/$15) but 1M ctx / 128K out / adaptive thinking. Kept as
-    // an opt-in distinct model (bare `sonnet`/`claude` still resolve to 4.6);
-    // primaries not promoted pending benchmarks. BlockRun fallback → sonnet-4.6.
+    // Newest Sonnet — near-Opus coding/agentic quality at Sonnet cost.
+    // 1M ctx / 128K out / adaptive thinking. Kept as an opt-in distinct model
+    // (bare `sonnet`/`claude` still resolve to 4.6); primaries not promoted
+    // pending benchmarks. BlockRun fallback → sonnet-4.6.
+    // Repriced $3/$15 → $2/$10: blockrun removed a 50% markup on it (live
+    // catalog on both chains reads $2/$10, 2026-10-02).
     id: "anthropic/claude-sonnet-5",
     name: "Claude Sonnet 5",
     version: "5",
-    inputPrice: 3.0,
-    outputPrice: 15.0,
+    inputPrice: 2.0,
+    outputPrice: 10.0,
     contextWindow: 1000000,
     maxOutput: 128000,
     reasoning: true,
@@ -1124,6 +1223,52 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     version: "5",
     inputPrice: 5.0,
     outputPrice: 25.0,
+    contextWindow: 1000000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  // Claude 5.5 / Fable 5.1 (blockrun 2026-10, live catalog 2026-10-02). All
+  // three are 1M ctx / 128K out with thinking. Opus 5.5 is $4/$20 — CHEAPER
+  // than Opus 5 — and Sonnet 5.5 matches Sonnet 5 at $2/$10. Fable 5.1
+  // succeeds Fable 5 at the same $10/$50. Request quirks are absorbed by the
+  // gateway: a forced tool_choice is served as auto, temperature/top_p/top_k
+  // are stripped, Opus 5.5 thinking cannot be disabled. Bare `opus`/`sonnet`/
+  // `fable` aliases are deliberately NOT repointed here.
+  {
+    id: "anthropic/claude-fable-5.1",
+    name: "Claude Fable 5.1",
+    version: "5.1",
+    inputPrice: 10.0,
+    outputPrice: 50.0,
+    contextWindow: 1000000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "anthropic/claude-opus-5.5",
+    name: "Claude Opus 5.5",
+    version: "5.5",
+    inputPrice: 4.0,
+    outputPrice: 20.0,
+    contextWindow: 1000000,
+    maxOutput: 128000,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "anthropic/claude-sonnet-5.5",
+    name: "Claude Sonnet 5.5",
+    version: "5.5",
+    inputPrice: 2.0,
+    outputPrice: 10.0,
     contextWindow: 1000000,
     maxOutput: 128000,
     reasoning: true,
@@ -1609,6 +1754,37 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     toolCalling: true,
   },
 
+  // Grok 4.6 / 4.7 (blockrun 2026-10, live catalog 2026-10-02). Same shape and
+  // price as grok-4.5: $2/$6 base, the whole request re-priced at $4/$12 once
+  // prompt tokens reach 200K (not expressible here — telemetry only, the
+  // charge is server-dictated via 402). Direct-xAI SKUs, Live Search supported.
+  {
+    id: "xai/grok-4.7",
+    name: "Grok 4.7",
+    version: "4.7",
+    inputPrice: 2.0,
+    outputPrice: 6.0,
+    contextWindow: 500000,
+    maxOutput: 16384,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+  {
+    id: "xai/grok-4.6",
+    name: "Grok 4.6",
+    version: "4.6",
+    inputPrice: 2.0,
+    outputPrice: 6.0,
+    contextWindow: 500000,
+    maxOutput: 16384,
+    reasoning: true,
+    vision: true,
+    agentic: true,
+    toolCalling: true,
+  },
+
   // xAI via BlockRun's OpenRouter credit pool (public in backend catalog,
   // added 2026-06-04). Picker-visible — listed in top-models.json.
   {
@@ -1652,6 +1828,12 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     maxOutput: 128000,
     reasoning: true,
     toolCalling: true,
+    // RETIRED 2026-09-24: hidden on blockrun (the OpenRouter pool degraded to
+    // endpoints above its price ceiling, so ~90% of calls 404'd) and redirected
+    // server-side to qwen/qwen3.7-flash. Entry kept so explicit pins stay
+    // routable; off the picker.
+    deprecated: true,
+    fallbackModel: "qwen/qwen3.7-flash",
   },
   {
     id: "xiaomi/mimo-v2.5-pro",
@@ -2072,14 +2254,14 @@ export const BLOCKRUN_MODELS: BlockRunModel[] = [
     toolCalling: true,
   },
   {
-    // The first DeepSeek SKU that takes images. Priced at DeepSeek's PEAK rate
-    // on purpose: they now split peak/off-peak and off-peak is half, so listing
-    // the lower number would sell under cost for seven hours every weekday.
+    // The first DeepSeek SKU that takes images. Was $0.44/$1.32 (DeepSeek's
+    // peak rate); the gateway now bills $0.30/$1.20 (live catalog on both
+    // chains, 2026-10-02), and the gateway's number is the one that is charged.
     id: "deepseek/deepseek-v4-flash-vision-exp",
     name: "DeepSeek V4 Flash Vision",
     version: "v4-flash-vision-exp",
-    inputPrice: 0.44,
-    outputPrice: 1.32,
+    inputPrice: 0.3,
+    outputPrice: 1.2,
     contextWindow: 1048576,
     maxOutput: 65536,
     reasoning: true,
