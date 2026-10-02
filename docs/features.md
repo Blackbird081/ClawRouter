@@ -178,17 +178,17 @@ Use short aliases instead of full model paths:
 ```bash
 /model free      # free/nemotron-3.5-lightning (FREE!)
 /model br-sonnet # anthropic/claude-sonnet-4.6
-/model opus      # anthropic/claude-opus-5
+/model opus      # anthropic/claude-opus-5; /model opus-5.5 for Opus 5.5 ($4/$20)
 /model haiku     # anthropic/claude-haiku-4.5
 /model gpt       # openai/gpt-4o
-/model gpt5      # openai/gpt-5.6-terra
+/model gpt5      # openai/gpt-5.6-terra; /model gpt-6-astra, gpt-6-sol, gpt-6-luna for GPT-6
 /model deepseek  # deepseek/deepseek-chat
 /model reasoner  # deepseek/deepseek-reasoner
 /model kimi      # moonshot/kimi-k2.7; /model kimi-k3 for the 1M-ctx flagship
 /model glm       # zai/glm-5.3
 /model gemini    # google/gemini-2.5-pro
 /model flash     # google/gemini-2.5-flash
-/model grok      # xai/grok-4.5
+/model grok      # xai/grok-4.5; /model grok-4.7 or grok-4.6 for the newer pins
 /model grok-fast # xai/grok-4-fast-reasoning
 ```
 

@@ -344,3 +344,88 @@ describe("OPENCLAW_MODELS integrity", () => {
     expect(VISIBLE_OPENCLAW_MODELS.map((m) => m.id)).toEqual(TOP_MODELS);
   });
 });
+
+describe("2026-10 gateway catalog sync (blockrun #781)", () => {
+  // Rates, context and max output from blockrun.ai/api/v1/models on 2026-10-02
+  // (identical on sol.blockrun.ai). estimateAmount() returns undefined for an
+  // id this catalog does not carry, which skips the balance pre-check and the
+  // maxCostPerRun gate — so a gateway model missing here is a cost-cap hole.
+  const expected: Array<[string, number, number, number, number]> = [
+    ["openai/gpt-6-astra", 10, 50, 1_050_000, 128_000],
+    ["openai/gpt-6-sol", 2, 10, 1_050_000, 128_000],
+    ["openai/gpt-6-luna", 0.1, 0.5, 1_050_000, 128_000],
+    ["openai/gpt-5.1", 1.25, 10, 400_000, 128_000],
+    ["anthropic/claude-fable-5.1", 10, 50, 1_000_000, 128_000],
+    ["anthropic/claude-opus-5.5", 4, 20, 1_000_000, 128_000],
+    ["anthropic/claude-sonnet-5.5", 2, 10, 1_000_000, 128_000],
+    ["xai/grok-4.6", 2, 6, 500_000, 16_384],
+    ["xai/grok-4.7", 2, 6, 500_000, 16_384],
+  ];
+
+  it.each(expected)("carries %s at gateway pricing", (id, input, output, ctx, maxOut) => {
+    const m = BLOCKRUN_MODELS.find((x) => x.id === id);
+    expect(m).toBeDefined();
+    expect(m).toMatchObject({
+      inputPrice: input,
+      outputPrice: output,
+      contextWindow: ctx,
+      maxOutput: maxOut,
+      reasoning: true,
+      vision: true,
+      toolCalling: true,
+    });
+    expect(m?.deprecated).toBeUndefined();
+    // Catalog ids must not be alias keys — a key shadows the entry.
+    expect(resolveModelAlias(id)).toBe(id);
+    expect(TOP_MODELS).toContain(id);
+  });
+
+  it("resolves the explicit pins, including the dashed Anthropic spellings", () => {
+    const pins: Record<string, string> = {
+      "gpt-6-astra": "openai/gpt-6-astra",
+      "gpt-6-sol": "openai/gpt-6-sol",
+      "gpt-6-luna": "openai/gpt-6-luna",
+      "gpt-5.1": "openai/gpt-5.1",
+      "openai/gpt-5.1": "openai/gpt-5.1",
+      "fable-5.1": "anthropic/claude-fable-5.1",
+      "anthropic/claude-fable-5-1": "anthropic/claude-fable-5.1",
+      "opus-5.5": "anthropic/claude-opus-5.5",
+      "anthropic/claude-opus-5-5": "anthropic/claude-opus-5.5",
+      "sonnet-5.5": "anthropic/claude-sonnet-5.5",
+      "anthropic/claude-sonnet-5-5": "anthropic/claude-sonnet-5.5",
+      "grok-4.6": "xai/grok-4.6",
+      "grok-4-7": "xai/grok-4.7",
+      "blockrun/grok-4.7": "xai/grok-4.7",
+    };
+    for (const [alias, target] of Object.entries(pins)) {
+      expect(resolveModelAlias(alias), alias).toBe(target);
+    }
+  });
+
+  it("leaves the bare family shorthands where they were", () => {
+    // Promoting a bare alias is a product decision, not part of a catalog sync.
+    expect(resolveModelAlias("opus")).toBe("anthropic/claude-opus-5");
+    expect(resolveModelAlias("sonnet")).toBe("anthropic/claude-sonnet-4.6");
+    expect(resolveModelAlias("fable")).toBe("anthropic/claude-fable-5");
+    expect(resolveModelAlias("grok")).toBe("xai/grok-4.5");
+    expect(resolveModelAlias("gpt5")).toBe("openai/gpt-5.6-terra");
+    expect(resolveModelAlias("gpt-6")).toBe("gpt-6");
+  });
+
+  it("corrects the rates the gateway changed", () => {
+    expect(BLOCKRUN_MODELS.find((m) => m.id === "anthropic/claude-sonnet-5")).toMatchObject({
+      inputPrice: 2,
+      outputPrice: 10,
+    });
+    expect(
+      BLOCKRUN_MODELS.find((m) => m.id === "deepseek/deepseek-v4-flash-vision-exp"),
+    ).toMatchObject({ inputPrice: 0.3, outputPrice: 1.2 });
+  });
+
+  it("retires tencent/hy3 from the picker but keeps the pin routable", () => {
+    const hy3 = BLOCKRUN_MODELS.find((m) => m.id === "tencent/hy3");
+    expect(hy3).toMatchObject({ deprecated: true, fallbackModel: "qwen/qwen3.7-flash" });
+    expect(TOP_MODELS).not.toContain("tencent/hy3");
+    expect(resolveModelAlias("hy3")).toBe("tencent/hy3");
+  });
+});

@@ -34,5 +34,7 @@ describe("TOP_MODELS", () => {
     expect(TOP_MODELS).not.toContain("free/nemotron-nano-9b-v2");
     expect(TOP_MODELS).not.toContain("free/nemotron-nano-12b-v2-vl");
     expect(TOP_MODELS).not.toContain("free/mistral-nemotron");
+    // Retired 2026-09-24 (blockrun): hidden + redirected to qwen3.7-flash.
+    expect(TOP_MODELS).not.toContain("tencent/hy3");
   });
 });
