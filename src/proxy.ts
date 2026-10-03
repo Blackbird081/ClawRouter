@@ -118,6 +118,7 @@ import {
 } from "./session.js";
 import { checkForUpdates } from "./updater.js";
 import { loadExcludeList } from "./exclude-models.js";
+import { demoteUnreliable, recordOutcome } from "./outcome-memory.js";
 import { PROXY_PORT } from "./config.js";
 import { SessionJournal } from "./journal.js";
 import { applyUpstreamProxy } from "./upstream-proxy.js";
@@ -6443,10 +6444,26 @@ async function proxyRequest(
         );
       }
 
-      // Limit to MAX_FALLBACK_ATTEMPTS to prevent infinite loops
-      modelsToTry = visionFiltered.slice(0, MAX_FALLBACK_ATTEMPTS);
+      // Models that keep failing on this kind of request go behind the rest
+      // (outcome memory). Over the whole eligible chain, before the cap, so a
+      // reliable sixth model is not cut in favour of five known-bad ones.
+      const { chain, demoted } = demoteUnreliable(
+        visionFiltered,
+        hasTools ? "tools" : "chat",
+        stickyExplicitModel,
+      );
+      if (demoted.length > 0) {
+        console.log(
+          `[ClawRouter] Outcome memory: tried last ${demoted.join(", ")} (repeated recent failures on ${hasTools ? "tool" : "chat"} requests)`,
+        );
+      }
 
-      // Deprioritize rate-limited models (put them at the end)
+      // Limit to MAX_FALLBACK_ATTEMPTS to prevent infinite loops
+      modelsToTry = chain.slice(0, MAX_FALLBACK_ATTEMPTS);
+
+      // Deprioritize rate-limited models (put them at the end). Last, so a
+      // model in cooldown stays behind every available one; the partition is
+      // stable, so the outcome ordering holds within each group.
       modelsToTry = prioritizeNonRateLimited(modelsToTry);
     } else {
       // For explicit model requests, use the requested model
@@ -6588,6 +6605,7 @@ async function proxyRequest(
     let lastError: { body: string; status: number; requestId?: string } | undefined;
     let actualModelUsed = modelId;
     const failedAttempts: Array<{ model: string; reason: string; status: number }> = [];
+    const requestKind = hasTools ? "tools" : "chat";
 
     for (let i = 0; i < modelsToTry.length; i++) {
       const tryModel = modelsToTry[i];
@@ -6638,8 +6656,12 @@ async function proxyRequest(
         throw abortError();
       }
 
-      // If the per-model timeout fired (but not global), treat as fallback-worthy error
-      if (!result.success && modelController.signal.aborted && !isLastAttempt) {
+      // If the per-model timeout fired (but not global), treat as fallback-worthy error.
+      // Remembered on the last attempt too: it comes back as a network error
+      // with no category, which the failure path below would not record.
+      const timedOut = !result.success && modelController.signal.aborted;
+      if (timedOut) recordOutcome(tryModel, requestKind, false);
+      if (timedOut && !isLastAttempt) {
         console.log(
           `[ClawRouter] Model ${tryModel} timed out after ${perAttemptTimeoutMs}ms, trying fallback`,
         );
@@ -6658,6 +6680,7 @@ async function proxyRequest(
             `[ClawRouter] ⚠️  Degenerate output from ${tryModel} (finish_reason=length + repetition loop) — retrying with next fallback`,
           );
           recordProviderError(tryModel, "server_error");
+          recordOutcome(tryModel, requestKind, false);
           failedAttempts.push({
             model: tryModel,
             reason: "degenerate_output",
@@ -6673,6 +6696,7 @@ async function proxyRequest(
           headers: result.response.headers,
         });
         actualModelUsed = tryModel;
+        recordOutcome(tryModel, requestKind, true);
         console.log(`[ClawRouter] Success with model: ${tryModel}`);
         // Accumulate estimated cost to session for maxCostPerRun tracking
         if (options.maxCostPerRunUsd && effectiveSessionId && !FREE_MODELS.has(tryModel)) {
@@ -6706,6 +6730,19 @@ async function proxyRequest(
         /payment.*verification.*failed|payment.*settlement.*failed|insufficient.*funds|transaction_simulation_failed/i.test(
           result.errorBody || "",
         );
+
+      // Only failures that say something about the model: 5xx and degraded
+      // 200s. Rate limits and overloads have their own cooldowns; auth,
+      // payment and bad-request errors are about the caller, not the model —
+      // including a payment failure that arrives as a 500 or a degraded 200.
+      if (
+        !isPaymentErr &&
+        (result.errorCategory === "server_error" ||
+          result.errorBody?.startsWith("degraded response"))
+      ) {
+        recordOutcome(tryModel, requestKind, false);
+      }
+
       if (isPaymentErr && !FREE_MODELS.has(tryModel) && !isLastAttempt) {
         failedAttempts.push({
           ...failedAttempts[failedAttempts.length - 1],
@@ -6773,6 +6810,7 @@ async function proxyRequest(
           if (retryResult.success && retryResult.response) {
             upstream = retryResult.response;
             actualModelUsed = tryModel;
+            recordOutcome(tryModel, requestKind, true);
             console.log(`[ClawRouter] Explicit-pin retry succeeded for: ${tryModel}`);
             if (options.maxCostPerRunUsd && effectiveSessionId && !FREE_MODELS.has(tryModel)) {
               const costEst = estimateAmount(tryModel, body.length, maxTokens);
@@ -6851,6 +6889,7 @@ async function proxyRequest(
               if (retryResult.success && retryResult.response) {
                 upstream = retryResult.response;
                 actualModelUsed = tryModel;
+                recordOutcome(tryModel, requestKind, true);
                 console.log(`[ClawRouter] Rate-limit retry succeeded for: ${tryModel}`);
                 if (options.maxCostPerRunUsd && effectiveSessionId && !FREE_MODELS.has(tryModel)) {
                   const costEst = estimateAmount(tryModel, body.length, maxTokens);
